@@ -12,9 +12,9 @@ import {
   Badge as BadgeComponent,
   BadgeText,
   Row,
-} from '../components/StyledComponents';
-import { COLORS, LEVELS } from '../constants';
-import { Badge } from '../types';
+} from '@/components/StyledComponents';
+import { COLORS, LEVELS } from '@/constants';
+import { Badge } from '@/types';
 
 export default function RewardsScreen() {
   // Mock badges data

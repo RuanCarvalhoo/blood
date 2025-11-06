@@ -14,9 +14,9 @@ import {
   ButtonText,
   Row,
   Center,
-} from "../components/StyledComponents";
-import { COLORS } from "../constants";
-import { formatDate } from "../utils";
+} from "@/components/StyledComponents";
+import { COLORS } from "@/constants";
+import { formatDate } from "@/utils";
 
 interface ScheduleScreenProps {
   onClose: () => void;

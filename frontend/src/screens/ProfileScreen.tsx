@@ -16,9 +16,9 @@ import {
   Center,
   Badge,
   BadgeText,
-} from '../components/StyledComponents';
-import { COLORS } from '../constants';
-import { calculateLevel } from '../utils';
+} from '@/components/StyledComponents';
+import { COLORS } from '@/constants';
+import { calculateLevel } from '@/utils';
 
 export default function ProfileScreen() {
   // Mock user data

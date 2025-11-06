@@ -16,13 +16,13 @@ import {
   ProgressFill,
   Row,
   Center,
-} from "../components/StyledComponents";
-import DonationIntervalModal from "../components/DonationIntervalModal";
-import DonationInfoButton from "../components/DonationInfoButton";
-import ScheduleScreen from "./ScheduleScreen";
-import ImpactScreen from "./ImpactScreen";
-import { COLORS } from "../constants";
-import { calculateLevel, getProgressToNextLevel, formatDate } from "../utils";
+} from "@/components/StyledComponents";
+import DonationIntervalModal from "@/components/DonationIntervalModal";
+import DonationInfoButton from "@/components/DonationInfoButton";
+import ScheduleScreen from "@/screens/ScheduleScreen";
+import ImpactScreen from "@/screens/ImpactScreen";
+import { COLORS } from "@/constants";
+import { calculateLevel, getProgressToNextLevel, formatDate } from "@/utils";
 
 export default function HomeScreen() {
   const [showIntervalModal, setShowIntervalModal] = useState(false);

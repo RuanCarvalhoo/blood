@@ -1,5 +1,5 @@
-import { LEVELS, POINTS_PER_DONATION } from '../constants';
-import { Level, User } from '../types';
+import { LEVELS, POINTS_PER_DONATION } from '@/constants';
+import { Level, User } from '@/types';
 
 export const calculateLevel = (points: number): Level => {
   const level = LEVELS.find(

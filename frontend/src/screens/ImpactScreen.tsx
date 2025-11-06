@@ -11,10 +11,10 @@ import {
   SmallText,
   Row,
   Center,
-} from "../components/StyledComponents";
-import { COLORS } from "../constants";
-import { formatDate } from "../utils";
-import { DonationHistory, PatientType, UsageDetails } from "../types";
+} from "@/components/StyledComponents";
+import { COLORS } from "@/constants";
+import { formatDate } from "@/utils";
+import { DonationHistory, PatientType, UsageDetails } from "@/types";
 
 interface ImpactScreenProps {
   onClose: () => void;

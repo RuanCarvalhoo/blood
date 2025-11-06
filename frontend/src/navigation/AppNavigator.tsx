@@ -4,13 +4,13 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 
-import HomeScreen from '../screens/HomeScreen';
-import DonationsScreen from '../screens/DonationsScreen';
-import RewardsScreen from '../screens/RewardsScreen';
-import ProfileScreen from '../screens/ProfileScreen';
+import HomeScreen from '@/screens/HomeScreen';
+import DonationsScreen from '@/screens/DonationsScreen';
+import RewardsScreen from '@/screens/RewardsScreen';
+import ProfileScreen from '@/screens/ProfileScreen';
 
-import { RootStackParamList, TabParamList } from '../types';
-import { COLORS } from '../constants';
+import { RootStackParamList, TabParamList } from '@/types';
+import { COLORS } from '@/constants';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();

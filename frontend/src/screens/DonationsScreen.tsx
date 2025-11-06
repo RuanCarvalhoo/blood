@@ -12,10 +12,10 @@ import {
   Button,
   ButtonText,
   Row,
-} from '../components/StyledComponents';
-import { COLORS } from '../constants';
-import { formatDate } from '../utils';
-import { Donation } from '../types';
+} from '@/components/StyledComponents';
+import { COLORS } from '@/constants';
+import { formatDate } from '@/utils';
+import { Donation } from '@/types';
 
 export default function DonationsScreen() {
   // Mock donations data
