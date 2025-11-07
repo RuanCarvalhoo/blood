@@ -1,8 +1,8 @@
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
-import { AppModule } from "./app.module";
+import { AppModule } from "@/app.module";
 import cors from "cors";
-import { env } from "./config/env";
+import { env } from "@/config/env";
 import { ValidationPipe } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 

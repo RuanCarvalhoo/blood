@@ -11,7 +11,7 @@ import {
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { PrismaService } from "@/infrastructure/prisma/prisma.service";
-import { env } from "../config/env";
+import { env } from "@/config/env";
 import { CreateUserDto } from "@/application/dtos/users/create-user.dto";
 
 @Injectable()
