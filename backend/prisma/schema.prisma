@@ -1,0 +1,128 @@
+generator client {
+	provider = "prisma-client-js"
+}
+
+datasource db {
+	provider = "postgresql"
+	url      = env("DATABASE_URL")
+}
+
+enum BloodType {
+	A_POS
+	A_NEG
+	B_POS
+	B_NEG
+	AB_POS
+	AB_NEG
+	O_POS
+	O_NEG
+}
+
+enum Gender {
+	MALE
+	FEMALE
+}
+
+enum PatientType {
+	EMERGENCY_SURGERY
+	ONCOLOGIC
+	TRAFFIC_ACCIDENT
+	COMPLICATED_DELIVERY
+	CHILD_ANEMIA
+	ELECTIVE_SURGERY
+	ELDERLY_PATIENT
+	HEMATOLOGIC_DISEASE
+}
+
+enum UsageDescription {
+	CARDIAC_SURGERY_TRANSFUSION
+	LEUKEMIA_TREATMENT
+	MULTIPLE_TRAUMA_REPLACEMENT
+	POSTPARTUM_HEMORRHAGE
+	SEVERE_ANEMIA_TREATMENT
+	LIVER_TRANSPLANT_SURGERY
+	DIGESTIVE_ULCER_TREATMENT
+	APLASTIC_ANEMIA_TRANSFUSION
+}
+
+enum HospitalName {
+	HOSPITAL_CENTRAL
+	HOSPITAL_SANTA_FE
+	MATERNIDADE_SAO_JOSE
+}
+
+model User {
+	id               String   @id @default(uuid())
+	name             String
+	telephone        String
+	email            String   @unique
+	password         String
+	bloodType        BloodType
+	gender           Gender
+	level            Int      @default(1)
+	points           Int      @default(0)
+	totalDonations   Int      @default(0)
+	lastDonationDate DateTime?
+	nextDonationDate DateTime?
+	badges           UserBadge[]
+	donations        Donation[]
+	createdAt        DateTime @default(now())
+	updatedAt        DateTime @updatedAt
+}
+
+model Donation {
+	id             String           @id @default(uuid())
+	user           User             @relation(fields: [userId], references: [id])
+	userId         String
+	date           DateTime
+	location       HospitalName
+	pointsEarned   Int              @default(100)
+	historyDetails DonationHistory?
+	createdAt      DateTime         @default(now())
+}
+
+model DonationHistory {
+	id           String        @id @default(uuid())
+	donation     Donation      @relation(fields: [donationId], references: [id])
+	donationId   String        @unique
+	usageDetails UsageDetail[]
+	createdAt    DateTime      @default(now())
+}
+
+model UsageDetail {
+	id           String          @id @default(uuid())
+	history      DonationHistory @relation(fields: [historyId], references: [id])
+	historyId    String
+	patientType  PatientType
+	usage        UsageDescription
+	date         DateTime
+	hospital     HospitalName
+}
+
+model Badge {
+	id          String       @id @default(uuid())
+	name        String
+	description String
+	icon        String
+	earnedDate  DateTime     @default(now())
+	users       UserBadge[]
+}
+
+model UserBadge {
+	id      String @id @default(uuid())
+	user    User   @relation(fields: [userId], references: [id])
+	userId  String
+	badge   Badge  @relation(fields: [badgeId], references: [id])
+	badgeId String
+	earnedAt DateTime @default(now())
+	@@unique([userId, badgeId])
+}
+
+model Level {
+	level      Int      @id
+	name       String
+	minPoints  Int
+	maxPoints  Int
+	benefits   Json
+	createdAt  DateTime @default(now())
+}
