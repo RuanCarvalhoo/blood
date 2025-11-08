@@ -21,4 +21,9 @@ export class UsersController {
   getProfile(@Param("id") id: string) {
     return this.usersService.profile(id);
   }
+
+  @Get()
+  listAll() {
+    return this.usersService.listAll();
+  }
 }

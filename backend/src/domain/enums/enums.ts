@@ -45,3 +45,8 @@ export enum HospitalName {
 export type ID = string;
 
 export const DEFAULT_POINTS_EARNED = 100;
+
+export const DONATION_INTERVAL_DAYS = {
+  [Gender.MALE]: 60,
+  [Gender.FEMALE]: 90,
+};
