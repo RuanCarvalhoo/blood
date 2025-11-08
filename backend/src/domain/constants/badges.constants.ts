@@ -9,60 +9,54 @@ export interface BadgeDefinition {
 export const BADGES: readonly BadgeDefinition[] = [
   {
     id: "first-donation",
-    name: "Primeira Doação",
+    name: "Corrente de Vida",
     description: "Parabéns pela sua primeira doação!",
-    icon: "🩸",
+    icon: "🩸", 
     requiredDonations: 1,
   },
   {
     id: "regular-donor",
-    name: "Doador Regular",
-    description: "Realizou 5 doações",
-    icon: "⭐",
+    name: "Emblema do Ciclo",
+    description: "Alcançou 5 doações, estabelecendo um ciclo regular.",
+    icon: "⭐", 
     requiredDonations: 5,
   },
   {
     id: "blood-hero",
-    name: "Herói do Sangue",
-    description: "Realizou 10 doações",
+    name: "O Guardião",
+    description: "Um marco de 10 doações. Você é um pilar da comunidade.",
     icon: "🦸",
     requiredDonations: 10,
   },
   {
     id: "life-saver",
-    name: "Salvador de Vidas",
-    description: "Realizou 25 doações",
+    name: "Rei da Solidariedade",
+    description: "Com 25 doações, sua influência na vida dos outros é notável.",
     icon: "👑",
     requiredDonations: 25,
   },
   {
     id: "living-legend",
-    name: "Lenda Viva",
-    description: "Realizou 50 doações",
+    name: "Cinquentenário de Honra",
+    description: "Atingiu 50 doações. Uma dedicação lendária à causa.",
     icon: "🏆",
     requiredDonations: 50,
   },
   {
     id: "ultimate-champion",
-    name: "Campeão Supremo",
-    description: "Realizou 100 doações",
+    name: "Legado de Sangue",
+    description: "Um feito de 100 doações. Você construiu um verdadeiro legado de vidas salvas.",
     icon: "💎",
     requiredDonations: 100,
   },
 ] as const;
 
-/**
- * Busca um badge por número de doações
- */
 export function getBadgeByDonations(
   donations: number
 ): BadgeDefinition | undefined {
   return BADGES.find((badge) => badge.requiredDonations === donations);
 }
 
-/**
- * Retorna todos os badges que o usuário deve ter com base no número de doações
- */
 export function getBadgesForDonationCount(
   donations: number
 ): BadgeDefinition[] {
