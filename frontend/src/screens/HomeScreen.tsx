@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import {
   Container,
   ScrollContainer,
@@ -19,24 +21,49 @@ import {
 } from "@/components/StyledComponents";
 import DonationIntervalModal from "@/components/DonationIntervalModal";
 import DonationInfoButton from "@/components/DonationInfoButton";
-import ScheduleScreen from "@/screens/ScheduleScreen";
-import ImpactScreen from "@/screens/ImpactScreen";
 import { COLORS } from "@/constants";
 import { calculateLevel, getProgressToNextLevel, formatDate } from "@/utils";
+import { useAuth } from "@/contexts";
+import { RootStackParamList } from "@/types";
+
+type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 export default function HomeScreen() {
+  const navigation = useNavigation<HomeScreenNavigationProp>();
+  const { user, isLoading } = useAuth();
   const [showIntervalModal, setShowIntervalModal] = useState(false);
-  const [showScheduleScreen, setShowScheduleScreen] = useState(false);
-  const [showImpactScreen, setShowImpactScreen] = useState(false);
 
-  const user = {
-    name: "Marcelo Rodrigues",
-    points: 250,
-    totalDonations: 2,
-    nextDonationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    lastDonationDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-    gender: "male" as "male" | "female",
-  };
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Container>
+        <Center style={{ flex: 1 }}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={{ marginTop: 16 }}>Carregando...</Text>
+        </Center>
+      </Container>
+    );
+  }
+
+  // Show login prompt if no user
+  if (!user) {
+    return (
+      <Container>
+        <Center style={{ flex: 1 }}>
+          <Ionicons
+            name="person-circle-outline"
+            size={80}
+            color={COLORS.gray}
+          />
+          <Title style={{ marginTop: 16 }}>Faça login</Title>
+          <Text style={{ marginTop: 8, textAlign: "center" }}>
+            Entre para acessar seu perfil e agendar doações
+          </Text>
+          {/* TODO: Add navigation to login screen */}
+        </Center>
+      </Container>
+    );
+  }
 
   const currentLevel = calculateLevel(user.points);
   const progress = getProgressToNextLevel(user.points);
@@ -46,34 +73,13 @@ export default function HomeScreen() {
   };
 
   const openScheduleScreen = () => {
-    setShowScheduleScreen(true);
+    navigation.navigate("Schedule");
   };
 
   const openImpactScreen = () => {
-    setShowImpactScreen(true);
+    navigation.navigate("Impact");
   };
 
-  if (showScheduleScreen) {
-    return (
-      <ScheduleScreen
-        user={user}
-        onClose={() => setShowScheduleScreen(false)}
-      />
-    );
-  }
-
-  if (showImpactScreen) {
-    return (
-      <ImpactScreen
-        user={{
-          name: user.name,
-          totalDonations: user.totalDonations,
-          donationHistory: [], // Será preenchido com dados reais
-        }}
-        onClose={() => setShowImpactScreen(false)}
-      />
-    );
-  }
   return (
     <Container>
       <StatusBar style="dark" />
@@ -117,7 +123,9 @@ export default function HomeScreen() {
                 <DonationInfoButton onPress={showDonationIntervalInfo} />
               </Row>
               <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 8 }}>
-                {formatDate(user.lastDonationDate)}
+                {user.lastDonationDate
+                  ? formatDate(user.lastDonationDate)
+                  : "N/A"}
               </Text>
               <SmallText>Última doação</SmallText>
             </Center>

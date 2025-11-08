@@ -1,7 +1,7 @@
-import React from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { View, FlatList } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React from "react";
+import { StatusBar } from "expo-status-bar";
+import { View, FlatList, ActivityIndicator } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import {
   Container,
   Card,
@@ -12,29 +12,16 @@ import {
   Button,
   ButtonText,
   Row,
-} from '@/components/StyledComponents';
-import { COLORS } from '@/constants';
-import { formatDate } from '@/utils';
-import { Donation } from '@/types';
+} from "@/components/StyledComponents";
+import { COLORS } from "@/constants";
+import { formatDate } from "@/utils";
+import { Donation } from "@/types";
+import { useAuth } from "@/contexts";
 
 export default function DonationsScreen() {
-  // Mock donations data
-  const donations: Donation[] = [
-    {
-      id: '1',
-      userId: '1',
-      date: new Date('2024-08-15'),
-      location: 'Hospital São Lucas',
-      pointsEarned: 100,
-    },
-    {
-      id: '2',
-      userId: '1',
-      date: new Date('2024-06-10'),
-      location: 'Hemocentro Central',
-      pointsEarned: 100,
-    },
-  ];
+  const { user, isLoading } = useAuth();
+
+  const donations: Donation[] = user?.donations || [];
 
   const renderDonationItem = ({ item }: { item: Donation }) => (
     <Card>
@@ -54,6 +41,33 @@ export default function DonationsScreen() {
     </Card>
   );
 
+  if (isLoading) {
+    return (
+      <Container>
+        <StatusBar style="dark" />
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={{ marginTop: 16 }}>Carregando...</Text>
+        </View>
+      </Container>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Container>
+        <StatusBar style="dark" />
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text>Você precisa estar autenticado.</Text>
+        </View>
+      </Container>
+    );
+  }
+
   return (
     <Container>
       <StatusBar style="dark" />
@@ -71,10 +85,10 @@ export default function DonationsScreen() {
         />
       ) : (
         <Card>
-          <Text style={{ textAlign: 'center', marginTop: 20 }}>
+          <Text style={{ textAlign: "center", marginTop: 20 }}>
             Você ainda não fez nenhuma doação.
           </Text>
-          <Text style={{ textAlign: 'center', marginTop: 8 }}>
+          <Text style={{ textAlign: "center", marginTop: 8 }}>
             Comece sua jornada agora!
           </Text>
         </Card>

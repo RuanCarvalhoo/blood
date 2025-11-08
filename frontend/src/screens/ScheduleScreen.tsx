@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, FlatList, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import {
   Container,
   ScrollContainer,
@@ -13,51 +16,46 @@ import {
   Button,
   ButtonText,
   Row,
-  Center,
 } from "@/components/StyledComponents";
-import { COLORS } from "@/constants";
+import { COLORS, DONATION_INTERVAL_DAYS } from "@/constants";
 import { formatDate } from "@/utils";
+import { useAuth } from "@/contexts";
+import { RootStackParamList } from "@/types";
 
-interface ScheduleScreenProps {
-  onClose: () => void;
-  user: {
-    name: string;
-    gender: "male" | "female";
-    totalDonations: number;
-    lastDonationDate?: Date;
-  };
-}
+type ScheduleScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  "Schedule"
+>;
 
-export default function ScheduleScreen({ onClose, user }: ScheduleScreenProps) {
+export default function ScheduleScreen() {
+  const navigation = useNavigation<ScheduleScreenNavigationProp>();
+  const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [availableDates, setAvailableDates] = useState<Date[]>([]);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [minDate, setMinDate] = useState<Date>(new Date());
   const [showValidationMessage, setShowValidationMessage] = useState(false);
 
   useEffect(() => {
-    calculateAvailableDates();
+    calculateMinDate();
   }, []);
 
-  const calculateAvailableDates = () => {
-    const intervalDays = user.gender === "male" ? 60 : 90;
+  const calculateMinDate = () => {
+    if (!user) return;
+
+    const intervalDays = DONATION_INTERVAL_DAYS[user.gender];
     const lastDonation = user.lastDonationDate || new Date();
 
-    // Data mínima para próxima doação
-    const minDate = new Date(lastDonation);
-    minDate.setDate(minDate.getDate() + intervalDays);
+    const minimumDate = new Date(lastDonation);
+    minimumDate.setDate(minimumDate.getDate() + intervalDays);
 
-    // Gerar próximos 30 dias disponíveis a partir da data mínima
-    const dates: Date[] = [];
-    for (let i = 0; i < 30; i++) {
-      const date = new Date(minDate);
-      date.setDate(date.getDate() + i);
+    setMinDate(minimumDate);
+  };
 
-      // Apenas dias úteis (segunda a sexta)
-      if (date.getDay() >= 1 && date.getDay() <= 5) {
-        dates.push(date);
-      }
+  const handleDateChange = (event: any, date?: Date) => {
+    setShowDatePicker(Platform.OS === "ios");
+    if (date) {
+      setSelectedDate(date);
     }
-
-    setAvailableDates(dates);
   };
 
   const handleSchedule = () => {
@@ -67,64 +65,36 @@ export default function ScheduleScreen({ onClose, user }: ScheduleScreenProps) {
       return;
     }
 
-    // Simulando agendamento bem-sucedido
-    onClose();
-  };
-
-  const renderDateItem = ({ item }: { item: Date }) => {
-    const isSelected = selectedDate?.toDateString() === item.toDateString();
-
-    return (
-      <TouchableOpacity
-        style={{
-          backgroundColor: isSelected ? COLORS.primary : COLORS.white,
-          padding: 16,
-          marginHorizontal: 8,
-          marginVertical: 4,
-          borderRadius: 12,
-          borderWidth: 1,
-          borderColor: isSelected ? COLORS.primary : COLORS.light,
-          minWidth: 120,
-          alignItems: "center",
-        }}
-        onPress={() => setSelectedDate(item)}
-      >
-        <Text
-          style={{
-            color: isSelected ? COLORS.white : COLORS.dark,
-            fontWeight: isSelected ? "bold" : "normal",
-            fontSize: 16,
-          }}
-        >
-          {item.toLocaleDateString("pt-BR", {
-            weekday: "short",
-            day: "2-digit",
-            month: "short",
-          })}
-        </Text>
-      </TouchableOpacity>
-    );
+    // TODO: Implementar chamada à API para agendar doação
+    navigation.goBack();
   };
 
   const getIntervalInfo = () => {
-    const intervalDays = user.gender === "male" ? 60 : 90;
+    if (!user) return "";
+
+    const intervalDays = DONATION_INTERVAL_DAYS[user.gender];
     const maxDonations = user.gender === "male" ? 4 : 3;
     return `Intervalo: ${intervalDays} dias | Máximo: ${maxDonations} doações/ano`;
   };
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <Container>
       <StatusBar style="dark" />
       <ScrollContainer>
-        {/* Header */}
         <Row style={{ alignItems: "center", marginTop: 50, marginBottom: 20 }}>
-          <TouchableOpacity onPress={onClose} style={{ marginRight: 16 }}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={{ marginRight: 16 }}
+          >
             <Ionicons name="arrow-back" size={24} color={COLORS.dark} />
           </TouchableOpacity>
           <Title>Agendar Doação</Title>
         </Row>
 
-        {/* Info Card */}
         <Card>
           <Subtitle>Informações do Agendamento</Subtitle>
           <Text style={{ marginTop: 8 }}>
@@ -136,28 +106,54 @@ export default function ScheduleScreen({ onClose, user }: ScheduleScreenProps) {
           </SmallText>
         </Card>
 
-        {/* Datas Disponíveis */}
         <Card>
-          <Subtitle>Datas Disponíveis</Subtitle>
+          <Subtitle>Selecionar Data</Subtitle>
           <SmallText style={{ marginTop: 4, marginBottom: 16 }}>
             Horário: 8h às 17h (Segunda a Sexta)
           </SmallText>
 
-          <FlatList
-            data={availableDates}
-            renderItem={renderDateItem}
-            keyExtractor={(item) => item.toISOString()}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingVertical: 8 }}
-          />
+          <TouchableOpacity
+            style={{
+              backgroundColor: COLORS.light,
+              padding: 16,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: COLORS.primary,
+              alignItems: "center",
+            }}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Row style={{ alignItems: "center" }}>
+              <Ionicons name="calendar" size={24} color={COLORS.primary} />
+              <Text
+                style={{ marginLeft: 12, fontSize: 16, color: COLORS.dark }}
+              >
+                {selectedDate
+                  ? formatDate(selectedDate)
+                  : "Toque para selecionar"}
+              </Text>
+            </Row>
+          </TouchableOpacity>
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={selectedDate || minDate}
+              mode="date"
+              display="default"
+              minimumDate={minDate}
+              onChange={handleDateChange}
+            />
+          )}
         </Card>
 
-        {/* Data Selecionada */}
         {selectedDate && (
           <Card>
             <Row style={{ alignItems: "center" }}>
-              <Ionicons name="calendar" size={24} color={COLORS.success} />
+              <Ionicons
+                name="checkmark-circle"
+                size={24}
+                color={COLORS.success}
+              />
               <View style={{ marginLeft: 12 }}>
                 <Subtitle>Data Selecionada</Subtitle>
                 <Text style={{ color: COLORS.success, fontWeight: "bold" }}>
@@ -168,7 +164,6 @@ export default function ScheduleScreen({ onClose, user }: ScheduleScreenProps) {
           </Card>
         )}
 
-        {/* Preparação */}
         <Card>
           <Subtitle>Preparação para Doação</Subtitle>
           <View style={{ marginTop: 12 }}>
@@ -195,7 +190,6 @@ export default function ScheduleScreen({ onClose, user }: ScheduleScreenProps) {
           </View>
         </Card>
 
-        {/* Mensagem de Validação */}
         {showValidationMessage && (
           <Card
             style={{
@@ -213,7 +207,6 @@ export default function ScheduleScreen({ onClose, user }: ScheduleScreenProps) {
           </Card>
         )}
 
-        {/* Botões */}
         <Button
           onPress={handleSchedule}
           style={{

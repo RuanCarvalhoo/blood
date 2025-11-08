@@ -1,16 +1,18 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
-import { Ionicons } from '@expo/vector-icons';
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createStackNavigator } from "@react-navigation/stack";
+import { Ionicons } from "@expo/vector-icons";
 
-import HomeScreen from '@/screens/HomeScreen';
-import DonationsScreen from '@/screens/DonationsScreen';
-import RewardsScreen from '@/screens/RewardsScreen';
-import ProfileScreen from '@/screens/ProfileScreen';
+import HomeScreen from "@/screens/HomeScreen";
+import DonationsScreen from "@/screens/DonationsScreen";
+import RewardsScreen from "@/screens/RewardsScreen";
+import ProfileScreen from "@/screens/ProfileScreen";
+import ScheduleScreen from "@/screens/ScheduleScreen";
+import ImpactScreen from "@/screens/ImpactScreen";
 
-import { RootStackParamList, TabParamList } from '@/types';
-import { COLORS } from '@/constants';
+import { RootStackParamList, TabParamList } from "@/types";
+import { COLORS } from "@/constants";
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
@@ -20,16 +22,16 @@ function TabNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap = 'home';
+          let iconName: keyof typeof Ionicons.glyphMap = "home";
 
-          if (route.name === 'Home') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Donations') {
-            iconName = focused ? 'water' : 'water-outline';
-          } else if (route.name === 'Rewards') {
-            iconName = focused ? 'trophy' : 'trophy-outline';
-          } else if (route.name === 'Profile') {
-            iconName = focused ? 'person' : 'person-outline';
+          if (route.name === "Home") {
+            iconName = focused ? "home" : "home-outline";
+          } else if (route.name === "Donations") {
+            iconName = focused ? "water" : "water-outline";
+          } else if (route.name === "Rewards") {
+            iconName = focused ? "trophy" : "trophy-outline";
+          } else if (route.name === "Profile") {
+            iconName = focused ? "person" : "person-outline";
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -39,25 +41,25 @@ function TabNavigator() {
         headerShown: false,
       })}
     >
-      <Tab.Screen 
-        name="Home" 
+      <Tab.Screen
+        name="Home"
         component={HomeScreen}
-        options={{ tabBarLabel: 'Início' }}
+        options={{ tabBarLabel: "Início" }}
       />
-      <Tab.Screen 
-        name="Donations" 
+      <Tab.Screen
+        name="Donations"
         component={DonationsScreen}
-        options={{ tabBarLabel: 'Doações' }}
+        options={{ tabBarLabel: "Doações" }}
       />
-      <Tab.Screen 
-        name="Rewards" 
+      <Tab.Screen
+        name="Rewards"
         component={RewardsScreen}
-        options={{ tabBarLabel: 'Recompensas' }}
+        options={{ tabBarLabel: "Recompensas" }}
       />
-      <Tab.Screen 
-        name="Profile" 
+      <Tab.Screen
+        name="Profile"
         component={ProfileScreen}
-        options={{ tabBarLabel: 'Perfil' }}
+        options={{ tabBarLabel: "Perfil" }}
       />
     </Tab.Navigator>
   );
@@ -68,6 +70,22 @@ export default function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="MainTabs" component={TabNavigator} />
+        <Stack.Screen
+          name="Schedule"
+          component={ScheduleScreen}
+          options={{
+            presentation: "modal",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="Impact"
+          component={ImpactScreen}
+          options={{
+            presentation: "modal",
+            headerShown: false,
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

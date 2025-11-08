@@ -10,6 +10,8 @@ export interface User {
   totalDonations: number;
   totalDonationsThisYear: number;
   badges: Badge[];
+  donations?: Donation[];
+  donationHistory?: DonationHistory[];
   nextDonationDate?: Date;
   lastDonationDate?: Date;
 }
@@ -85,6 +87,8 @@ export interface Level {
 // Navigation Types
 export type RootStackParamList = {
   MainTabs: undefined;
+  Schedule: undefined;
+  Impact: undefined;
   DonationDetail: { donationId: string };
 };
 

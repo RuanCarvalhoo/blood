@@ -1,7 +1,7 @@
-import React from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { View, FlatList } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React from "react";
+import { StatusBar } from "expo-status-bar";
+import { View, FlatList, ActivityIndicator } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import {
   Container,
   Card,
@@ -12,28 +12,15 @@ import {
   Badge as BadgeComponent,
   BadgeText,
   Row,
-} from '@/components/StyledComponents';
-import { COLORS, LEVELS } from '@/constants';
-import { Badge } from '@/types';
+} from "@/components/StyledComponents";
+import { COLORS, LEVELS } from "@/constants";
+import { Badge } from "@/types";
+import { useAuth } from "@/contexts";
 
 export default function RewardsScreen() {
-  // Mock badges data
-  const earnedBadges: Badge[] = [
-    {
-      id: '1',
-      name: 'Primeira Doação',
-      description: 'Parabéns pela sua primeira doação!',
-      icon: 'medal',
-      earnedDate: new Date('2024-06-10'),
-    },
-    {
-      id: '2',
-      name: 'Doador Regular',
-      description: 'Realizou 2 doações',
-      icon: 'trophy',
-      earnedDate: new Date('2024-08-15'),
-    },
-  ];
+  const { user, isLoading } = useAuth();
+
+  const earnedBadges: Badge[] = user?.badges || [];
 
   const renderBadge = ({ item }: { item: Badge }) => (
     <Card>
@@ -43,21 +30,29 @@ export default function RewardsScreen() {
           <Subtitle>{item.name}</Subtitle>
           <SmallText>{item.description}</SmallText>
           <SmallText style={{ marginTop: 4 }}>
-            Conquistado em: {new Date(item.earnedDate).toLocaleDateString('pt-BR')}
+            Conquistado em:{" "}
+            {new Date(item.earnedDate).toLocaleDateString("pt-BR")}
           </SmallText>
         </View>
       </Row>
     </Card>
   );
 
-  const renderLevel = ({ item }: { item: typeof LEVELS[0] }) => (
+  const renderLevel = ({ item }: { item: (typeof LEVELS)[0] }) => (
     <Card>
       <Row>
         <Ionicons name="star" size={32} color={COLORS.warning} />
         <View style={{ flex: 1, marginLeft: 12 }}>
-          <Subtitle>Nível {item.level}: {item.name}</Subtitle>
-          <SmallText>{item.minPoints} - {item.maxPoints === Infinity ? '∞' : item.maxPoints} pontos</SmallText>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
+          <Subtitle>
+            Nível {item.level}: {item.name}
+          </Subtitle>
+          <SmallText>
+            {item.minPoints} -{" "}
+            {item.maxPoints === Infinity ? "∞" : item.maxPoints} pontos
+          </SmallText>
+          <View
+            style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 8 }}
+          >
             {item.benefits.map((benefit, index) => (
               <BadgeComponent key={index}>
                 <BadgeText>{benefit}</BadgeText>
@@ -68,6 +63,33 @@ export default function RewardsScreen() {
       </Row>
     </Card>
   );
+
+  if (isLoading) {
+    return (
+      <Container>
+        <StatusBar style="dark" />
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={{ marginTop: 16 }}>Carregando...</Text>
+        </View>
+      </Container>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Container>
+        <StatusBar style="dark" />
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text>Você precisa estar autenticado.</Text>
+        </View>
+      </Container>
+    );
+  }
 
   return (
     <Container>
@@ -90,7 +112,9 @@ export default function RewardsScreen() {
           <>
             <Card style={{ marginTop: 20 }}>
               <Subtitle>Sistema de Níveis</Subtitle>
-              <SmallText>Avance de nível e desbloqueie benefícios exclusivos</SmallText>
+              <SmallText>
+                Avance de nível e desbloqueie benefícios exclusivos
+              </SmallText>
             </Card>
             <FlatList
               data={LEVELS}

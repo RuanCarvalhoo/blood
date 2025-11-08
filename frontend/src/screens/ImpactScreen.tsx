@@ -1,7 +1,14 @@
 import React from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, ScrollView, TouchableOpacity } from "react-native";
+import {
+  View,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import {
   Container,
   Card,
@@ -14,84 +21,52 @@ import {
 } from "@/components/StyledComponents";
 import { COLORS } from "@/constants";
 import { formatDate } from "@/utils";
-import { DonationHistory, PatientType, UsageDetails } from "@/types";
+import {
+  DonationHistory,
+  PatientType,
+  UsageDetails,
+  RootStackParamList,
+} from "@/types";
+import { useAuth } from "@/contexts";
 
-interface ImpactScreenProps {
-  onClose: () => void;
-  user: {
-    name: string;
-    totalDonations: number;
-    donationHistory: DonationHistory[];
-  };
-}
+type ImpactScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  "Impact"
+>;
 
-export default function ImpactScreen({ onClose, user }: ImpactScreenProps) {
+export default function ImpactScreen() {
+  const navigation = useNavigation<ImpactScreenNavigationProp>();
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <Container>
+        <StatusBar style="dark" />
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={{ marginTop: 16 }}>Carregando...</Text>
+        </View>
+      </Container>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Container>
+        <StatusBar style="dark" />
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text>Você precisa estar autenticado.</Text>
+        </View>
+      </Container>
+    );
+  }
+
   const totalPeopleHelped = user.totalDonations * 4;
-
-  const mockDonationHistory: DonationHistory[] = [
-    {
-      id: "1",
-      date: new Date(2024, 8, 15), // Setembro 2024
-      location: "Hospital Central",
-      usageDetails: [
-        {
-          patientType: "Cirurgia de emergência",
-          usage: "Transfusão durante cirurgia cardíaca",
-          date: new Date(2024, 8, 16),
-          hospital: "Hospital Central",
-        },
-        {
-          patientType: "Paciente oncológico",
-          usage: "Tratamento de leucemia",
-          date: new Date(2024, 8, 18),
-          hospital: "Hospital Central",
-        },
-        {
-          patientType: "Acidente de trânsito",
-          usage: "Reposição após trauma múltiplo",
-          date: new Date(2024, 8, 20),
-          hospital: "Hospital Santa fé",
-        },
-        {
-          patientType: "Parto complicado",
-          usage: "Hemorragia pós-parto",
-          date: new Date(2024, 8, 22),
-          hospital: "Maternidade São José",
-        },
-      ],
-    },
-    {
-      id: "2",
-      date: new Date(2024, 6, 10), // Julho 2024
-      location: "Hospital Santa fé",
-      usageDetails: [
-        {
-          patientType: "Criança com anemia",
-          usage: "Tratamento de anemia severa",
-          date: new Date(2024, 6, 12),
-          hospital: "Maternidade São José",
-        },
-        {
-          patientType: "Cirurgia eletiva",
-          usage: "Cirurgia de transplante de fígado",
-          date: new Date(2024, 6, 15),
-          hospital: "Hospital Santa fé",
-        },
-        {
-          patientType: "Paciente idoso",
-          usage: "Tratamento de úlcera digestiva",
-          date: new Date(2024, 6, 18),
-          hospital: "Hospital Central",
-        },
-        {
-          patientType: "Doença hematológica",
-          usage: "Transfusão para anemia aplástica",
-          date: new Date(2024, 6, 25),
-          hospital: "Hospital Central",
-        },
-      ],
-    },
-  ];
+  const donationHistory: DonationHistory[] = user.donationHistory || [];
 
   const getImpactIcon = (
     patientType: PatientType
@@ -131,7 +106,6 @@ export default function ImpactScreen({ onClose, user }: ImpactScreenProps) {
     <Container>
       <StatusBar style="dark" />
 
-      {/* Header */}
       <Row
         style={{
           alignItems: "center",
@@ -140,7 +114,10 @@ export default function ImpactScreen({ onClose, user }: ImpactScreenProps) {
           paddingHorizontal: 16,
         }}
       >
-        <TouchableOpacity onPress={onClose} style={{ marginRight: 16 }}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={{ marginRight: 16 }}
+        >
           <Ionicons name="arrow-back" size={24} color={COLORS.dark} />
         </TouchableOpacity>
         <Title>Seu Impacto</Title>
@@ -177,7 +154,7 @@ export default function ImpactScreen({ onClose, user }: ImpactScreenProps) {
             <Center style={{ flex: 1 }}>
               <Ionicons name="medical" size={24} color={COLORS.danger} />
               <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 4 }}>
-                {mockDonationHistory.reduce(
+                {donationHistory.reduce(
                   (acc, donation) =>
                     acc +
                     donation.usageDetails.filter(
@@ -193,7 +170,7 @@ export default function ImpactScreen({ onClose, user }: ImpactScreenProps) {
             <Center style={{ flex: 1 }}>
               <Ionicons name="heart" size={24} color={COLORS.primary} />
               <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 4 }}>
-                {mockDonationHistory.reduce(
+                {donationHistory.reduce(
                   (acc, donation) =>
                     acc +
                     donation.usageDetails.filter(
@@ -209,7 +186,7 @@ export default function ImpactScreen({ onClose, user }: ImpactScreenProps) {
             <Center style={{ flex: 1 }}>
               <Ionicons name="fitness" size={24} color={COLORS.warning} />
               <Text style={{ fontSize: 18, fontWeight: "bold", marginTop: 4 }}>
-                {mockDonationHistory.reduce(
+                {donationHistory.reduce(
                   (acc, donation) =>
                     acc +
                     donation.usageDetails.filter(
@@ -231,7 +208,7 @@ export default function ImpactScreen({ onClose, user }: ImpactScreenProps) {
             Histórico de Utilização
           </Subtitle>
 
-          {mockDonationHistory.map((donation) => (
+          {donationHistory.map((donation) => (
             <View key={donation.id} style={{ marginBottom: 24 }}>
               <Row style={{ alignItems: "center", marginBottom: 12 }}>
                 <Ionicons name="calendar" size={16} color={COLORS.gray} />

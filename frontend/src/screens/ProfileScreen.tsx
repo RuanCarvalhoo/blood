@@ -1,7 +1,7 @@
-import React from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React from "react";
+import { StatusBar } from "expo-status-bar";
+import { View, ActivityIndicator } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import {
   Container,
   ScrollContainer,
@@ -16,20 +16,44 @@ import {
   Center,
   Badge,
   BadgeText,
-} from '@/components/StyledComponents';
-import { COLORS } from '@/constants';
-import { calculateLevel } from '@/utils';
+} from "@/components/StyledComponents";
+import { COLORS } from "@/constants";
+import { calculateLevel } from "@/utils";
+import { useAuth } from "@/contexts";
 
 export default function ProfileScreen() {
-  // Mock user data
-  const user = {
-    name: 'João Silva',
-    email: 'joao.silva@email.com',
-    bloodType: 'O+' as const,
-    points: 250,
-    totalDonations: 2,
-    gender: 'male' as const,
-  };
+  const { user, isLoading, logout } = useAuth();
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Container>
+        <Center style={{ flex: 1 }}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={{ marginTop: 16 }}>Carregando...</Text>
+        </Center>
+      </Container>
+    );
+  }
+
+  // Show login prompt if no user
+  if (!user) {
+    return (
+      <Container>
+        <Center style={{ flex: 1 }}>
+          <Ionicons
+            name="person-circle-outline"
+            size={80}
+            color={COLORS.gray}
+          />
+          <Title style={{ marginTop: 16 }}>Faça login</Title>
+          <Text style={{ marginTop: 8, textAlign: "center" }}>
+            Entre para acessar seu perfil
+          </Text>
+        </Center>
+      </Container>
+    );
+  }
 
   const currentLevel = calculateLevel(user.points);
 
@@ -46,8 +70,8 @@ export default function ProfileScreen() {
                 height: 100,
                 borderRadius: 50,
                 backgroundColor: COLORS.primary,
-                alignItems: 'center',
-                justifyContent: 'center',
+                alignItems: "center",
+                justifyContent: "center",
                 marginBottom: 16,
               }}
             >
@@ -56,7 +80,9 @@ export default function ProfileScreen() {
             <Title>{user.name}</Title>
             <SmallText>{user.email}</SmallText>
             <Badge style={{ marginTop: 8 }}>
-              <BadgeText>Nível {currentLevel.level}: {currentLevel.name}</BadgeText>
+              <BadgeText>
+                Nível {currentLevel.level}: {currentLevel.name}
+              </BadgeText>
             </Badge>
           </Center>
         </Card>
@@ -79,21 +105,21 @@ export default function ProfileScreen() {
           <Row style={{ marginTop: 12, marginBottom: 12 }}>
             <Center style={{ flex: 1 }}>
               <Ionicons name="trophy" size={32} color={COLORS.warning} />
-              <Text style={{ fontSize: 24, fontWeight: 'bold', marginTop: 8 }}>
+              <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 8 }}>
                 {user.points}
               </Text>
               <SmallText>Pontos</SmallText>
             </Center>
             <Center style={{ flex: 1 }}>
               <Ionicons name="water" size={32} color={COLORS.primary} />
-              <Text style={{ fontSize: 24, fontWeight: 'bold', marginTop: 8 }}>
+              <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 8 }}>
                 {user.totalDonations}
               </Text>
               <SmallText>Doações</SmallText>
             </Center>
             <Center style={{ flex: 1 }}>
               <Ionicons name="people" size={32} color={COLORS.success} />
-              <Text style={{ fontSize: 24, fontWeight: 'bold', marginTop: 8 }}>
+              <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 8 }}>
                 {user.totalDonations * 4}
               </Text>
               <SmallText>Vidas Salvas</SmallText>
@@ -106,7 +132,11 @@ export default function ProfileScreen() {
           <Subtitle>Seus Benefícios</Subtitle>
           {currentLevel.benefits.map((benefit, index) => (
             <Row key={index} style={{ marginTop: 8 }}>
-              <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
+              <Ionicons
+                name="checkmark-circle"
+                size={20}
+                color={COLORS.success}
+              />
               <Text style={{ marginLeft: 8, flex: 1 }}>{benefit}</Text>
             </Row>
           ))}
