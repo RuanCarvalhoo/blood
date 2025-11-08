@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { User as PrismaUser } from "@prisma/client";
 import { PrismaService } from "@/infrastructure/prisma/prisma.service";
 import {
   IUserRepository,
@@ -7,10 +8,36 @@ import {
 } from "@/domain/repositories/user.repository";
 import { ID } from "@/domain/enums/enums";
 import { UserEntity } from "@/domain/entities/user.entity";
+import { EnumMapper } from "@/infrastructure/mappers/enum.mapper";
 
 @Injectable()
 export class PrismaUserRepository implements IUserRepository {
   constructor(private readonly prisma: PrismaService) {}
+
+  private toDomain(prismaUser: PrismaUser): UserEntity {
+    const entity = new UserEntity();
+    entity.id = prismaUser.id;
+    entity.name = prismaUser.name;
+    entity.email = prismaUser.email;
+    entity.telephone = prismaUser.telephone;
+    entity.password = prismaUser.password;
+    entity.bloodType = EnumMapper.toDomainBloodType(prismaUser.bloodType);
+    entity.gender = EnumMapper.toDomainGender(prismaUser.gender);
+    entity.level = prismaUser.level;
+    entity.points = prismaUser.points;
+    entity.totalDonations = prismaUser.totalDonations;
+    entity.lastDonationDate = prismaUser.lastDonationDate;
+    entity.nextDonationDate = prismaUser.nextDonationDate;
+    entity.createdAt = prismaUser.createdAt;
+    entity.updatedAt = prismaUser.updatedAt;
+    return entity;
+  }
+
+  private toSafeDomain(prismaUser: PrismaUser): Omit<UserEntity, "password"> {
+    const entity = this.toDomain(prismaUser);
+    const { password, ...safe } = entity;
+    return safe;
+  }
 
   async create(data: CreateUserDTO): Promise<UserEntity> {
     const created = await this.prisma.user.create({
@@ -19,8 +46,8 @@ export class PrismaUserRepository implements IUserRepository {
         telephone: data.telephone,
         email: data.email,
         password: data.password,
-        bloodType: data.bloodType,
-        gender: data.gender,
+        bloodType: EnumMapper.toPrismaBloodType(data.bloodType),
+        gender: EnumMapper.toPrismaGender(data.gender),
         level: data.level ?? 1,
         points: data.points ?? 0,
         totalDonations: data.totalDonations ?? 0,
@@ -28,55 +55,23 @@ export class PrismaUserRepository implements IUserRepository {
         nextDonationDate: data.nextDonationDate ?? null,
       },
     });
-    return created as unknown as UserEntity;
+    return this.toDomain(created);
   }
 
   async findAll(): Promise<Array<Omit<UserEntity, "password">>> {
-    const users = await this.prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        telephone: true,
-        bloodType: true,
-        gender: true,
-        level: true,
-        points: true,
-        totalDonations: true,
-        lastDonationDate: true,
-        nextDonationDate: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-    return users as any;
+    const users = await this.prisma.user.findMany();
+    return users.map((user) => this.toSafeDomain(user));
   }
 
   async findActive(): Promise<Array<Omit<UserEntity, "password">>> {
-    // No status column in schema; treat all users as active
     return this.findAll();
   }
 
   async findById(id: ID): Promise<Omit<UserEntity, "password"> | null> {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        telephone: true,
-        bloodType: true,
-        gender: true,
-        level: true,
-        points: true,
-        totalDonations: true,
-        lastDonationDate: true,
-        nextDonationDate: true,
-        createdAt: true,
-        updatedAt: true,
-      },
     });
-    return (user as any) ?? null;
+    return user ? this.toSafeDomain(user) : null;
   }
 
   async update(
@@ -89,8 +84,12 @@ export class PrismaUserRepository implements IUserRepository {
         name: data.name,
         telephone: data.telephone,
         email: data.email,
-        bloodType: data.bloodType,
-        gender: data.gender,
+        bloodType: data.bloodType
+          ? EnumMapper.toPrismaBloodType(data.bloodType)
+          : undefined,
+        gender: data.gender
+          ? EnumMapper.toPrismaGender(data.gender)
+          : undefined,
         level: data.level,
         points: data.points,
         totalDonations: data.totalDonations,
@@ -98,33 +97,17 @@ export class PrismaUserRepository implements IUserRepository {
         nextDonationDate: data.nextDonationDate,
         password: data.password,
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        telephone: true,
-        bloodType: true,
-        gender: true,
-        level: true,
-        points: true,
-        totalDonations: true,
-        lastDonationDate: true,
-        nextDonationDate: true,
-        createdAt: true,
-        updatedAt: true,
-      },
     });
-    return updated as any;
+    return this.toSafeDomain(updated);
   }
 
   async softDelete(id: ID): Promise<void> {
-    // No status column; perform hard delete
     await this.prisma.user.delete({ where: { id } });
   }
 
   async findByEmail(email: string): Promise<UserEntity | null> {
     const user = await this.prisma.user.findUnique({ where: { email } });
-    return (user as any) ?? null;
+    return user ? this.toDomain(user) : null;
   }
 
   async incrementDonationStats(
@@ -139,23 +122,8 @@ export class PrismaUserRepository implements IUserRepository {
         totalDonations: { increment: 1 },
         nextDonationDate,
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        telephone: true,
-        bloodType: true,
-        gender: true,
-        level: true,
-        points: true,
-        totalDonations: true,
-        lastDonationDate: true,
-        nextDonationDate: true,
-        createdAt: true,
-        updatedAt: true,
-      },
     });
-    return updated as any;
+    return this.toSafeDomain(updated);
   }
 
   async attachBadge(userId: ID, badgeId: ID): Promise<void> {

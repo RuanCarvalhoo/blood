@@ -60,6 +60,7 @@ npm run dev
   - `@/domain/*`, `@/application/*`, `@/infrastructure/*`
 - DTOs em `src/application/dtos/*`
 - Validação global (`ValidationPipe`) já habilitada em `main.ts`
+- Configuração: `@nestjs/config` com validação Zod (type-safe, injetável via DI)
 
 ## Configuração do Frontend (Expo)
 

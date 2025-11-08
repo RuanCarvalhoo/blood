@@ -1,13 +1,15 @@
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
+import { ConfigService } from "@nestjs/config";
 import { AppModule } from "@/app.module";
 import cors from "cors";
-import { env } from "@/config/env";
 import { ValidationPipe } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
+  const configService = app.get(ConfigService);
+
   app.use(cors());
   app.setGlobalPrefix("api");
   app.useGlobalPipes(
@@ -26,7 +28,8 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("api/docs", app, document);
-  const port = env.PORT || 4000;
+
+  const port = configService.get<number>("app.port") || 4000;
   await app.listen(port);
   console.log(`Nest API listening at http://localhost:${port}`);
 }
