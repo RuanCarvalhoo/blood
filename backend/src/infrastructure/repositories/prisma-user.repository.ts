@@ -115,15 +115,35 @@ export class PrismaUserRepository implements IUserRepository {
     pointsEarned: number,
     nextDonationDate: Date | null
   ): Promise<Omit<UserEntity, "password">> {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw new Error("User not found");
+
+    const newPoints = user.points + pointsEarned;
+    const newLevel = this.calculateLevel(newPoints);
+
     const updated = await this.prisma.user.update({
       where: { id },
       data: {
-        points: { increment: pointsEarned },
+        points: newPoints,
+        level: newLevel,
         totalDonations: { increment: 1 },
         nextDonationDate,
       },
     });
     return this.toSafeDomain(updated);
+  }
+
+  private calculateLevel(points: number): number {
+    if (points >= 32000) return 10;
+    if (points >= 16000) return 9;
+    if (points >= 8000) return 8;
+    if (points >= 4000) return 7;
+    if (points >= 2000) return 6;
+    if (points >= 1000) return 5;
+    if (points >= 600) return 4;
+    if (points >= 300) return 3;
+    if (points >= 100) return 2;
+    return 1;
   }
 
   async attachBadge(userId: ID, badgeId: ID): Promise<void> {

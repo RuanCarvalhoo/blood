@@ -13,6 +13,7 @@ import {
   DEFAULT_POINTS_EARNED,
 } from "@/domain/enums/enums";
 import { BadgesService } from "@/badges/badges.service";
+import { LevelsService } from "@/levels/levels.service";
 
 @Injectable()
 export class DonationsService {
@@ -21,7 +22,8 @@ export class DonationsService {
     private readonly userRepository: IUserRepository,
     @Inject(IDonationRepository)
     private readonly donationRepository: IDonationRepository,
-    private readonly badgesService: BadgesService
+    private readonly badgesService: BadgesService,
+    private readonly levelsService: LevelsService
   ) {}
 
   async register(data: RegisterDonationDto) {
@@ -44,6 +46,8 @@ export class DonationsService {
       }
     }
 
+    const oldPoints = user.points;
+
     const donation = await this.donationRepository.create({
       userId: data.userId,
       date: new Date(data.date),
@@ -61,6 +65,11 @@ export class DonationsService {
       nextDonationDate
     );
 
+    const levelUpInfo = this.levelsService.checkLevelUp(
+      oldPoints,
+      updatedUser.points
+    );
+
     const newBadges = await this.badgesService.checkAndAwardBadges(
       data.userId,
       updatedUser.totalDonations
@@ -70,6 +79,12 @@ export class DonationsService {
       donation,
       user: updatedUser,
       newBadges,
+      levelUp: levelUpInfo.leveledUp
+        ? {
+            oldLevel: levelUpInfo.oldLevel,
+            newLevel: levelUpInfo.newLevel,
+          }
+        : null,
     };
   }
 
