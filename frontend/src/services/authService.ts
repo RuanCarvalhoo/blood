@@ -53,10 +53,8 @@ class AuthService {
       backendData
     );
 
-    // Store token
     if (response.token) {
       httpClient.setToken(response.token);
-      // TODO: Store token in AsyncStorage for persistence
     }
 
     return response;
@@ -71,10 +69,8 @@ class AuthService {
       data
     );
 
-    // Store token
     if (response.token) {
       httpClient.setToken(response.token);
-      // TODO: Store token in AsyncStorage for persistence
     }
 
     return response;
@@ -85,7 +81,6 @@ class AuthService {
    */
   logout() {
     httpClient.setToken(null);
-    // TODO: Remove token from AsyncStorage
   }
 
   /**

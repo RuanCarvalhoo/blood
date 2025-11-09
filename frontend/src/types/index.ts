@@ -86,6 +86,8 @@ export interface Level {
 
 // Navigation Types
 export type RootStackParamList = {
+  Login: undefined;
+  Register: undefined;
   MainTabs: undefined;
   Schedule: undefined;
   Impact: undefined;

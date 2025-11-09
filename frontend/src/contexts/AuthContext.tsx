@@ -6,7 +6,7 @@ import React, {
   ReactNode,
 } from "react";
 import { User } from "@/types";
-import { authService, userService } from "@/services";
+import { authService, userService, storageService } from "@/services";
 
 interface AuthContextState {
   user: User | null;
@@ -42,7 +42,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // TODO: Load token from AsyncStorage
+        const savedToken = await storageService.getToken();
+        const savedUser = await storageService.getUser();
+
+        if (savedToken && savedUser) {
+          setToken(savedToken);
+          setUser(savedUser);
+          authService.setToken(savedToken);
+        }
       } catch (error) {
         console.error("Failed to initialize auth:", error);
       } finally {
@@ -60,7 +67,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(response.user);
       setToken(response.token);
 
-      // TODO: Store in AsyncStorage
+      await storageService.saveToken(response.token);
+      await storageService.saveUser(response.user);
     } catch (error) {
       console.error("Login failed:", error);
       throw error;
@@ -76,7 +84,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(response.user);
       setToken(response.token);
 
-      // TODO: Store in AsyncStorage
+      await storageService.saveToken(response.token);
+      await storageService.saveUser(response.user);
     } catch (error) {
       console.error("Registration failed:", error);
       throw error;
@@ -85,12 +94,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     authService.logout();
     setUser(null);
     setToken(null);
 
-    // TODO: Clear AsyncStorage
+    await storageService.clearAll();
   };
 
   const refreshUser = async () => {
@@ -99,6 +108,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const userData = await userService.getProfile(user.id);
       setUser(userData);
+      await storageService.saveUser(userData);
     } catch (error) {
       console.error("Failed to refresh user:", error);
       throw error;

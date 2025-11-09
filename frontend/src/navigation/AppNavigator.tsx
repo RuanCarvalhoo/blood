@@ -10,9 +10,12 @@ import RewardsScreen from "@/screens/RewardsScreen";
 import ProfileScreen from "@/screens/ProfileScreen";
 import ScheduleScreen from "@/screens/ScheduleScreen";
 import ImpactScreen from "@/screens/ImpactScreen";
+import LoginScreen from "@/screens/LoginScreen";
+import RegisterScreen from "@/screens/RegisterScreen";
 
 import { RootStackParamList, TabParamList } from "@/types";
 import { COLORS } from "@/constants";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
@@ -66,27 +69,40 @@ function TabNavigator() {
 }
 
 export default function AppNavigator() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return null;
+  }
+
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="MainTabs" component={TabNavigator} />
-        <Stack.Screen
-          name="Schedule"
-          component={ScheduleScreen}
-          options={{
-            presentation: "modal",
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="Impact"
-          component={ImpactScreen}
-          options={{
-            presentation: "modal",
-            headerShown: false,
-          }}
-        />
-      </Stack.Navigator>
+      {isAuthenticated ? (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="MainTabs" component={TabNavigator} />
+          <Stack.Screen
+            name="Schedule"
+            component={ScheduleScreen}
+            options={{
+              presentation: "modal",
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="Impact"
+            component={ImpactScreen}
+            options={{
+              presentation: "modal",
+              headerShown: false,
+            }}
+          />
+        </Stack.Navigator>
+      ) : (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+        </Stack.Navigator>
+      )}
     </NavigationContainer>
   );
 }

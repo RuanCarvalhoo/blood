@@ -149,6 +149,13 @@ export default function ProfileScreen() {
         <Button variant="secondary">
           <ButtonText>Configurações</ButtonText>
         </Button>
+        <Button
+          variant="secondary"
+          onPress={logout}
+          style={{ marginTop: 8, backgroundColor: "#dc2626" }}
+        >
+          <ButtonText style={{ color: "#fff" }}>Sair</ButtonText>
+        </Button>
       </ScrollContainer>
     </Container>
   );
