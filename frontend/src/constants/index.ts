@@ -1,20 +1,32 @@
 export const COLORS = {
-  primary: "#E74C3C",
-  secondary: "#3498DB",
-  success: "#27AE60",
-  warning: "#F39C12",
-  danger: "#C0392B",
-  dark: "#2C3E50",
-  light: "#ECF0F1",
+  // Cores Principais (Vibrantes)
+  primary: "#EF4444", // Vermelho Gota
+  primaryDark: "#B91C1C", // Sombra 3D do Vermelho
+
+  secondary: "#3B82F6", // Azul
+  secondaryDark: "#1D4ED8", // Sombra 3D do Azul
+
+  success: "#22C55E", // Verde
+  successDark: "#15803D", // Sombra 3D do Verde
+
+  warning: "#EAB308", // Amarelo/Ouro
+  warningDark: "#A16207", // Sombra 3D do Amarelo
+
+  // Neutros
+  dark: "#374151", // Cinza Escuro (Texto)
+  mediumGray: "#9CA3AF", // Cinza Médio
+  light: "#F3F4F6", // Cinza Claro (Background de inputs)
   white: "#FFFFFF",
-  gray: "#95A5A6",
-  background: "#F8F9FA",
+  background: "#FFFFFF", // Fundo geral
+  border: "#E5E7EB",
+  gray: "#6B7280",
+  danger: "#DC2626",
 };
 
 export const LEVELS = [
   {
     level: 1,
-    name: "Iniciante",
+    name: "Gota de Esperança",
     minPoints: 0,
     maxPoints: 100,
     benefits: ["Badge de Iniciante"],
@@ -24,36 +36,28 @@ export const LEVELS = [
     name: "Doador Regular",
     minPoints: 101,
     maxPoints: 300,
-    benefits: ["Badge de Doador Regular", "Prioridade em agendamentos"],
+    benefits: ["Prioridade no agendamento"],
   },
   {
     level: 3,
-    name: "Herói do Sangue",
+    name: "Coração Solidário",
     minPoints: 301,
     maxPoints: 600,
-    benefits: [
-      "Badge de Herói",
-      "Certificado de Honra",
-      "Descontos em parceiros",
-    ],
+    benefits: ["Certificado Digital", "Descontos parceiros"],
   },
   {
     level: 4,
-    name: "Lenda Viva",
+    name: "Guardião da Vida",
     minPoints: 601,
     maxPoints: 1000,
-    benefits: [
-      "Badge de Lenda",
-      "Reconhecimento Especial",
-      "Brindes Exclusivos",
-    ],
+    benefits: ["Kit Doador Exclusivo"],
   },
   {
     level: 5,
-    name: "Salvador de Vidas",
+    name: "Lenda do Sangue",
     minPoints: 1001,
     maxPoints: Infinity,
-    benefits: ["Badge Supremo", "Homenagem Especial", "Benefícios VIP"],
+    benefits: ["Evento de Gala Anual", "Reconhecimento Público"],
   },
 ];
 

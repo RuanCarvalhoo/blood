@@ -7,6 +7,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -76,7 +78,7 @@ export async function schedulePushNotification(
       data,
       sound: "default",
     },
-    trigger: trigger || { seconds: 2 },
+    trigger: trigger || { seconds: 2, type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL },
   });
 }
 
@@ -90,4 +92,35 @@ export async function getBadgeCount(): Promise<number> {
 
 export async function setBadgeCount(count: number) {
   await Notifications.setBadgeCountAsync(count);
+}
+
+export async function scheduleDonationReminder(lastDonationDate: Date, gender: 'male' | 'female') {
+  // 60 days for men, 90 for women (approx) - using constant would be better but avoiding circular deps if any
+  const intervalDays = gender === 'male' ? 60 : 90; 
+  
+  const nextDate = new Date(lastDonationDate);
+  nextDate.setDate(nextDate.getDate() + intervalDays);
+  
+  const now = new Date();
+  // Calculate seconds until the date. If date is past, don't schedule.
+  const secondsUntil = Math.floor((nextDate.getTime() - now.getTime()) / 1000);
+
+  if (secondsUntil > 0) {
+    await schedulePushNotification(
+      "Você já pode doar sangue!",
+      "Seu intervalo de recuperação acabou. Agende sua doação e salve vidas!",
+      { type: "reminder" },
+      { seconds: secondsUntil, type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL }
+    );
+  }
+}
+
+export async function scheduleEngagementNotification() {
+  // Schedule a "tip" notification for 10 seconds from now (for demo)
+  await schedulePushNotification(
+    "Você sabia?",
+    "Uma única doação pode salvar até 4 vidas. Continue sendo um herói!",
+    { type: "tip" },
+    { seconds: 10, type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL }
+  );
 }

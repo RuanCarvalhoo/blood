@@ -11,87 +11,133 @@ export const ScrollContainer = styled.ScrollView`
   background-color: ${COLORS.background};
 `;
 
+// Card com borda suave estilo Duolingo
 export const Card = styled.View`
   background-color: ${COLORS.white};
-  border-radius: 12px;
-  padding: 16px;
-  margin: 8px 16px;
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.1;
-  shadow-radius: 4px;
-  elevation: 3;
+  border-radius: 20px;
+  padding: 20px;
+  margin: 10px 16px;
+  border-width: 2px;
+  border-color: ${COLORS.border};
+  /* Sombra sólida em vez de difusa */
+  border-bottom-width: 4px;
 `;
 
 export const Title = styled.Text`
-  font-size: 24px;
-  font-weight: bold;
+  font-size: 28px;
+  font-weight: 800; /* Extra Bold */
   color: ${COLORS.dark};
   margin-bottom: 8px;
+  letter-spacing: -0.5px;
 `;
 
 export const Subtitle = styled.Text`
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   color: ${COLORS.dark};
   margin-bottom: 8px;
 `;
 
 export const Text = styled.Text`
-  font-size: 16px;
+  font-size: 17px;
   color: ${COLORS.dark};
-  line-height: 24px;
+  line-height: 26px;
+  font-weight: 500;
 `;
 
 export const SmallText = styled.Text`
-  font-size: 14px;
-  color: ${COLORS.gray};
+  font-size: 15px;
+  color: ${COLORS.mediumGray};
+  font-weight: 600;
 `;
 
-export const Button = styled.TouchableOpacity<{
-  variant?: "primary" | "secondary";
-}>`
-  background-color: ${(props: { variant?: "primary" | "secondary" }) =>
-    props.variant === "secondary" ? COLORS.secondary : COLORS.primary};
+// O Input estilo "Duolingo" é cinza claro com borda
+export const Input = styled.TextInput`
+  background-color: ${COLORS.light};
+  border-width: 2px;
+  border-color: ${COLORS.border};
+  border-radius: 16px;
   padding: 16px;
-  border-radius: 8px;
+  font-size: 18px;
+  color: ${COLORS.dark};
+  margin-bottom: 16px;
+  font-weight: 600;
+`;
+
+// Botão com efeito 3D (borda inferior grossa)
+export const Button = styled.TouchableOpacity<{
+  variant?: "primary" | "secondary" | "outline";
+}>`
+  background-color: ${(props: {
+    variant?: "primary" | "secondary" | "outline";
+  }) =>
+    props.variant === "secondary"
+      ? COLORS.secondary
+      : props.variant === "outline"
+      ? "transparent"
+      : COLORS.primary};
+
+  padding: 16px;
+  border-radius: 16px;
   align-items: center;
   justify-content: center;
-  margin: 8px 16px;
-`;
-
-export const ButtonText = styled.Text`
-  color: ${COLORS.white};
-  font-size: 16px;
-  font-weight: bold;
-`;
-
-export const ProgressBar = styled.View`
-  height: 8px;
-  background-color: ${COLORS.light};
-  border-radius: 4px;
-  overflow: hidden;
   margin: 8px 0;
+
+  /* Efeito 3D */
+  border-width: ${(props: { variant?: "primary" | "secondary" | "outline" }) =>
+    props.variant === "outline" ? "2px" : "0px"};
+  border-bottom-width: 4px;
+  border-color: ${(props: { variant?: "primary" | "secondary" | "outline" }) =>
+    props.variant === "secondary"
+      ? COLORS.secondaryDark
+      : props.variant === "outline"
+      ? COLORS.border
+      : COLORS.primaryDark};
+`;
+
+export const GameButton = Button;
+
+export const ButtonText = styled.Text<{ variant?: "outline" }>`
+  color: ${(props: { variant?: "outline" }) =>
+    props.variant === "outline" ? COLORS.mediumGray : COLORS.white};
+  font-size: 18px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+// Barra de progresso arredondada e grossa
+export const ProgressBar = styled.View`
+  height: 20px;
+  background-color: ${COLORS.border};
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 12px 0;
 `;
 
 export const ProgressFill = styled.View<{ progress: number }>`
   height: 100%;
   width: ${(props: { progress: number }) => Math.min(props.progress, 100)}%;
-  background-color: ${COLORS.success};
-  border-radius: 4px;
+  background-color: ${COLORS.warning};
+  border-radius: 12px;
+  /* Brilho no topo da barra */
+  border-top-width: 4px;
+  border-top-color: rgba(255, 255, 255, 0.3);
 `;
 
 export const Badge = styled.View`
-  background-color: ${COLORS.primary};
+  background-color: ${COLORS.warning};
   padding: 8px 16px;
-  border-radius: 16px;
+  border-radius: 20px;
   margin: 4px;
+  border-bottom-width: 3px;
+  border-color: ${COLORS.warningDark};
 `;
 
 export const BadgeText = styled.Text`
   color: ${COLORS.white};
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 800;
 `;
 
 export const Row = styled.View`
@@ -103,14 +149,4 @@ export const Row = styled.View`
 export const Center = styled.View`
   align-items: center;
   justify-content: center;
-`;
-
-export const Input = styled.TextInput`
-  background-color: ${COLORS.light};
-  border-radius: 8px;
-  padding: 12px 16px;
-  font-size: 16px;
-  color: ${COLORS.dark};
-  border-width: 1px;
-  border-color: ${COLORS.gray}20;
 `;

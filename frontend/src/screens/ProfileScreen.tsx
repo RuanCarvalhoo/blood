@@ -1,6 +1,6 @@
 import React from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, ActivityIndicator, TouchableOpacity } from "react-native";
+import { View, ActivityIndicator, TouchableOpacity, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -12,15 +12,17 @@ import {
   Subtitle,
   Text,
   SmallText,
-  Button,
+  GameButton,
   ButtonText,
   Row,
   Center,
   Badge,
   BadgeText,
 } from "@/components/StyledComponents";
+import DigitalCard from "@/components/DigitalCard";
 import { COLORS } from "@/constants";
-import { calculateLevel } from "@/utils";
+import { MOCK_DONATION_HISTORY } from "@/constants/mocks";
+import { calculateLevel, formatDate } from "@/utils";
 import { useAuth, useNotifications } from "@/contexts";
 import { RootStackParamList } from "@/types";
 
@@ -31,7 +33,6 @@ export default function ProfileScreen() {
   const { user, isLoading, logout } = useAuth();
   const { unreadCount } = useNotifications();
 
-  // Show loading state
   if (isLoading) {
     return (
       <Container>
@@ -43,7 +44,6 @@ export default function ProfileScreen() {
     );
   }
 
-  // Show login prompt if no user
   if (!user) {
     return (
       <Container>
@@ -67,7 +67,7 @@ export default function ProfileScreen() {
   return (
     <Container>
       <StatusBar style="dark" />
-      <ScrollContainer>
+      <ScrollContainer contentContainerStyle={{ paddingBottom: 40 }}>
         {/* Profile Header with Notifications */}
         <Row style={{ marginTop: 50, marginBottom: 20, paddingHorizontal: 16 }}>
           <View style={{ flex: 1 }} />
@@ -109,42 +109,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </Row>
 
-        <Card>
-          <Center>
-            <View
-              style={{
-                width: 100,
-                height: 100,
-                borderRadius: 50,
-                backgroundColor: COLORS.primary,
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 16,
-              }}
-            >
-              <Ionicons name="person" size={50} color={COLORS.white} />
-            </View>
-            <Title>{user.name}</Title>
-            <SmallText>{user.email}</SmallText>
-            <Badge style={{ marginTop: 8 }}>
-              <BadgeText>
-                Nível {currentLevel.level}: {currentLevel.name}
-              </BadgeText>
-            </Badge>
-          </Center>
-        </Card>
-
-        {/* Blood Type Card */}
-        <Card>
-          <Subtitle>Informações Pessoais</Subtitle>
-          <Row style={{ marginTop: 12 }}>
-            <Ionicons name="water" size={24} color={COLORS.primary} />
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text>Tipo Sanguíneo</Text>
-              <SmallText>{user.bloodType}</SmallText>
-            </View>
-          </Row>
-        </Card>
+        <DigitalCard user={user} />
 
         {/* Stats Card */}
         <Card>
@@ -174,9 +139,32 @@ export default function ProfileScreen() {
           </Row>
         </Card>
 
+        {/* Donation History */}
+        <Card>
+          <Subtitle>Histórico de Doações</Subtitle>
+          {MOCK_DONATION_HISTORY.map((donation) => (
+            <View key={donation.id} style={{ marginTop: 16, borderBottomWidth: 1, borderBottomColor: COLORS.border, paddingBottom: 8 }}>
+              <Row>
+                <View>
+                  <Text style={{ fontWeight: "bold" }}>{donation.location}</Text>
+                  <SmallText>{formatDate(new Date(donation.date))}</SmallText>
+                </View>
+                <View style={{ alignItems: "flex-end" }}>
+                  <Badge style={{ backgroundColor: COLORS.light, borderColor: COLORS.border, paddingVertical: 4 }}>
+                    <SmallText style={{ color: COLORS.dark, fontSize: 12 }}>{donation.amount}</SmallText>
+                  </Badge>
+                </View>
+              </Row>
+            </View>
+          ))}
+          <TouchableOpacity style={{ marginTop: 12, alignItems: "center" }}>
+            <Text style={{ color: COLORS.primary, fontWeight: "bold" }}>Ver histórico completo</Text>
+          </TouchableOpacity>
+        </Card>
+
         {/* Benefits Card */}
         <Card>
-          <Subtitle>Seus Benefícios</Subtitle>
+          <Subtitle>Seus Benefícios Atuais</Subtitle>
           {currentLevel.benefits.map((benefit, index) => (
             <Row key={index} style={{ marginTop: 8 }}>
               <Ionicons
@@ -190,19 +178,19 @@ export default function ProfileScreen() {
         </Card>
 
         {/* Settings Buttons */}
-        <Button>
-          <ButtonText>Editar Perfil</ButtonText>
-        </Button>
-        <Button variant="secondary">
-          <ButtonText>Configurações</ButtonText>
-        </Button>
-        <Button
-          variant="secondary"
-          onPress={logout}
-          style={{ marginTop: 8, backgroundColor: "#dc2626" }}
-        >
-          <ButtonText style={{ color: "#fff" }}>Sair</ButtonText>
-        </Button>
+        <View style={{ paddingHorizontal: 16 }}>
+          <GameButton variant="secondary">
+            <ButtonText>Editar Perfil</ButtonText>
+          </GameButton>
+          
+          <GameButton
+            variant="outline"
+            onPress={logout}
+            style={{ marginTop: 8, borderColor: COLORS.danger }}
+          >
+            <ButtonText style={{ color: COLORS.danger }} variant="outline">Sair da Conta</ButtonText>
+          </GameButton>
+        </View>
       </ScrollContainer>
     </Container>
   );

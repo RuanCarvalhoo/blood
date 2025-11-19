@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, TouchableOpacity, Platform } from "react-native";
+import { View, TouchableOpacity, Platform, FlatList, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useNavigation } from "@react-navigation/native";
@@ -13,11 +13,13 @@ import {
   Subtitle,
   Text,
   SmallText,
-  Button,
+  GameButton,
   ButtonText,
   Row,
+  Center,
 } from "@/components/StyledComponents";
 import { COLORS, DONATION_INTERVAL_DAYS } from "@/constants";
+import { MOCK_HEMOCENTERS } from "@/constants/mocks";
 import { formatDate } from "@/utils";
 import { useAuth } from "@/contexts";
 import { RootStackParamList } from "@/types";
@@ -31,36 +33,28 @@ export default function ScheduleScreen() {
   const navigation = useNavigation<ScheduleScreenNavigationProp>();
   const { user } = useAuth();
 
-  // Initialize minDate immediately to avoid invalid date
   const getInitialMinDate = () => {
     if (!user) return new Date();
-
-    const intervalDays = DONATION_INTERVAL_DAYS[user.gender] || 90; // Default to 90 days if gender not found
-
+    const intervalDays = DONATION_INTERVAL_DAYS[user.gender] || 90;
     let lastDonation = new Date();
     if (user.lastDonationDate) {
       const parsedDate = new Date(user.lastDonationDate);
-      // Check if the parsed date is valid
       if (!isNaN(parsedDate.getTime())) {
         lastDonation = parsedDate;
       }
     }
-
     const minimumDate = new Date(lastDonation);
     minimumDate.setDate(minimumDate.getDate() + intervalDays);
-
-    // Ensure the result is a valid date
-    if (isNaN(minimumDate.getTime())) {
-      return new Date();
-    }
-
+    if (isNaN(minimumDate.getTime())) return new Date();
     return minimumDate;
   };
 
   const [minDate] = useState<Date>(getInitialMinDate());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showValidationMessage, setShowValidationMessage] = useState(false);
+  const [selectedHemocenter, setSelectedHemocenter] = useState<string | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [showHemocenterModal, setShowHemocenterModal] = useState(false);
 
   const handleDateChange = (event: any, date?: Date) => {
     if (Platform.OS !== "web") {
@@ -68,6 +62,7 @@ export default function ScheduleScreen() {
     }
     if (date) {
       setSelectedDate(date);
+      setSelectedTime(null); // Reset time when date changes
     }
   };
 
@@ -75,78 +70,84 @@ export default function ScheduleScreen() {
     const dateValue = e.target.value;
     if (dateValue) {
       setSelectedDate(new Date(dateValue));
+      setSelectedTime(null);
     }
   };
 
   const handleSchedule = () => {
-    if (!selectedDate) {
-      setShowValidationMessage(true);
-      setTimeout(() => setShowValidationMessage(false), 3000);
+    if (!selectedDate || !selectedHemocenter || !selectedTime) {
       return;
     }
-
-    // TODO: Implementar chamada à API para agendar doação
+    // TODO: API call
     navigation.goBack();
   };
 
   const getIntervalInfo = () => {
     if (!user) return "";
-
     const intervalDays = DONATION_INTERVAL_DAYS[user.gender];
     const maxDonations = user.gender === "male" ? 4 : 3;
     return `Intervalo: ${intervalDays} dias | Máximo: ${maxDonations} doações/ano`;
   };
 
-  if (!user) {
-    return null;
-  }
+  const selectedHemocenterData = MOCK_HEMOCENTERS.find(h => h.id === selectedHemocenter);
+
+  if (!user) return null;
 
   return (
     <Container>
       <StatusBar style="dark" />
-      <ScrollContainer>
-        <Row style={{ alignItems: "center", marginTop: 50, marginBottom: 20 }}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={{ marginRight: 16 }}
-          >
+      <ScrollContainer contentContainerStyle={{ paddingBottom: 40 }}>
+        <Row style={{ alignItems: "center", marginTop: 50, marginBottom: 20, paddingHorizontal: 16 }}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 16 }}>
             <Ionicons name="arrow-back" size={24} color={COLORS.dark} />
           </TouchableOpacity>
           <Title>Agendar Doação</Title>
         </Row>
 
         <Card>
-          <Subtitle>Informações do Agendamento</Subtitle>
-          <Text style={{ marginTop: 8 }}>
-            Olá, {user.name}! Selecione uma data disponível para sua próxima
-            doação.
-          </Text>
-          <SmallText style={{ marginTop: 8, color: COLORS.gray }}>
-            {getIntervalInfo()}
-          </SmallText>
+          <Subtitle>Local de Doação</Subtitle>
+          <TouchableOpacity
+            onPress={() => setShowHemocenterModal(true)}
+            style={{
+              backgroundColor: COLORS.light,
+              padding: 16,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: selectedHemocenter ? COLORS.primary : COLORS.border,
+              marginTop: 8,
+            }}
+          >
+            <Row style={{ alignItems: "center", justifyContent: "space-between" }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontWeight: "bold", color: selectedHemocenter ? COLORS.dark : COLORS.mediumGray }}>
+                  {selectedHemocenterData ? selectedHemocenterData.name : "Selecione um hemocentro"}
+                </Text>
+                {selectedHemocenterData && (
+                  <SmallText>{selectedHemocenterData.address}</SmallText>
+                )}
+              </View>
+              <Ionicons name="chevron-down" size={20} color={COLORS.mediumGray} />
+            </Row>
+          </TouchableOpacity>
         </Card>
 
         <Card>
-          <Subtitle>Selecionar Data</Subtitle>
-          <SmallText style={{ marginTop: 4, marginBottom: 16 }}>
-            Horário: 8h às 17h (Segunda a Sexta)
+          <Subtitle>Data</Subtitle>
+          <SmallText style={{ marginTop: 4, marginBottom: 12 }}>
+            {getIntervalInfo()}
           </SmallText>
 
           {Platform.OS === "web" ? (
-            <View
-              style={{
-                backgroundColor: COLORS.light,
-                padding: 16,
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: COLORS.primary,
-              }}
-            >
+            <View style={{
+              backgroundColor: COLORS.light,
+              padding: 16,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: selectedDate ? COLORS.primary : COLORS.border,
+            }}>
               <input
                 type="date"
-                value={
-                  selectedDate ? selectedDate.toISOString().split("T")[0] : ""
-                }
+                value={selectedDate ? selectedDate.toISOString().split("T")[0] : ""}
                 onChange={handleWebDateChange}
                 min={minDate.toISOString().split("T")[0]}
                 style={{
@@ -168,27 +169,18 @@ export default function ScheduleScreen() {
                   padding: 16,
                   borderRadius: 12,
                   borderWidth: 1,
-                  borderColor: COLORS.primary,
+                  borderColor: selectedDate ? COLORS.primary : COLORS.border,
                   alignItems: "center",
                 }}
                 onPress={() => setShowDatePicker(true)}
               >
                 <Row style={{ alignItems: "center" }}>
-                  <Ionicons name="calendar" size={24} color={COLORS.primary} />
-                  <Text
-                    style={{
-                      marginLeft: 12,
-                      fontSize: 16,
-                      color: COLORS.dark,
-                    }}
-                  >
-                    {selectedDate
-                      ? formatDate(selectedDate)
-                      : "Toque para selecionar"}
+                  <Ionicons name="calendar" size={24} color={selectedDate ? COLORS.primary : COLORS.mediumGray} />
+                  <Text style={{ marginLeft: 12, color: selectedDate ? COLORS.dark : COLORS.mediumGray }}>
+                    {selectedDate ? formatDate(selectedDate) : "Toque para selecionar a data"}
                   </Text>
                 </Row>
               </TouchableOpacity>
-
               {showDatePicker && (
                 <DateTimePicker
                   value={selectedDate || minDate}
@@ -202,78 +194,92 @@ export default function ScheduleScreen() {
           )}
         </Card>
 
-        {selectedDate && (
+        {selectedHemocenterData && selectedDate && (
           <Card>
-            <Row style={{ alignItems: "center" }}>
-              <Ionicons
-                name="checkmark-circle"
-                size={24}
-                color={COLORS.success}
-              />
-              <View style={{ marginLeft: 12 }}>
-                <Subtitle>Data Selecionada</Subtitle>
-                <Text style={{ color: COLORS.success, fontWeight: "bold" }}>
-                  {formatDate(selectedDate)}
-                </Text>
-              </View>
-            </Row>
+            <Subtitle>Horário Disponível</Subtitle>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 12, gap: 10 }}>
+              {selectedHemocenterData.availableSlots.map((time) => (
+                <TouchableOpacity
+                  key={time}
+                  onPress={() => setSelectedTime(time)}
+                  style={{
+                    backgroundColor: selectedTime === time ? COLORS.primary : COLORS.light,
+                    paddingVertical: 10,
+                    paddingHorizontal: 16,
+                    borderRadius: 20,
+                    borderWidth: 1,
+                    borderColor: selectedTime === time ? COLORS.primaryDark : COLORS.border,
+                  }}
+                >
+                  <Text style={{
+                    color: selectedTime === time ? COLORS.white : COLORS.dark,
+                    fontWeight: "bold",
+                    fontSize: 14
+                  }}>
+                    {time}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </Card>
         )}
 
-        <Card>
-          <Subtitle>Preparação para Doação</Subtitle>
-          <View style={{ marginTop: 12 }}>
-            <Row style={{ alignItems: "center", marginBottom: 12 }}>
-              <Ionicons name="time" size={20} color={COLORS.warning} />
-              <Text style={{ marginLeft: 12, flex: 1 }}>Jejum de 4 horas</Text>
-            </Row>
-            <Row style={{ alignItems: "center", marginBottom: 12 }}>
-              <Ionicons name="bed" size={20} color={COLORS.primary} />
-              <Text style={{ marginLeft: 12, flex: 1 }}>Boa noite de sono</Text>
-            </Row>
-            <Row style={{ alignItems: "center", marginBottom: 12 }}>
-              <Ionicons name="card" size={20} color={COLORS.secondary} />
-              <Text style={{ marginLeft: 12, flex: 1 }}>
-                Documento com foto
-              </Text>
-            </Row>
-            <Row style={{ alignItems: "center" }}>
-              <Ionicons name="water" size={20} color={COLORS.secondary} />
-              <Text style={{ marginLeft: 12, flex: 1 }}>
-                Beba bastante água
-              </Text>
-            </Row>
-          </View>
-        </Card>
-
-        {showValidationMessage && (
-          <Card
-            style={{
-              backgroundColor: "#ffebee",
-              borderColor: COLORS.danger,
-              borderWidth: 1,
-            }}
+        <View style={{ padding: 16 }}>
+          <GameButton
+            variant="primary"
+            onPress={handleSchedule}
+            disabled={!selectedDate || !selectedHemocenter || !selectedTime}
+            style={{ opacity: (!selectedDate || !selectedHemocenter || !selectedTime) ? 0.5 : 1 }}
           >
-            <Row style={{ alignItems: "center" }}>
-              <Ionicons name="warning" size={20} color={COLORS.danger} />
-              <Text style={{ marginLeft: 8, color: COLORS.danger }}>
-                Por favor, selecione uma data para o agendamento.
-              </Text>
-            </Row>
-          </Card>
-        )}
+            <ButtonText>CONFIRMAR AGENDAMENTO</ButtonText>
+          </GameButton>
+        </View>
 
-        <Button
-          onPress={handleSchedule}
-          style={{
-            backgroundColor: selectedDate ? COLORS.primary : COLORS.gray,
-            marginBottom: 16,
-          }}
+        {/* Modal de Hemocentros */}
+        <Modal
+          visible={showHemocenterModal}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowHemocenterModal(false)}
         >
-          <ButtonText>
-            {selectedDate ? "Confirmar Agendamento" : "Selecione uma Data"}
-          </ButtonText>
-        </Button>
+          <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}>
+            <View style={{ backgroundColor: COLORS.background, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: "80%" }}>
+              <Row style={{ justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <Title style={{ fontSize: 22, marginBottom: 0 }}>Selecione o Local</Title>
+                <TouchableOpacity onPress={() => setShowHemocenterModal(false)}>
+                  <Ionicons name="close" size={24} color={COLORS.dark} />
+                </TouchableOpacity>
+              </Row>
+              
+              <FlatList
+                data={MOCK_HEMOCENTERS}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSelectedHemocenter(item.id);
+                      setShowHemocenterModal(false);
+                    }}
+                    style={{
+                      padding: 16,
+                      borderBottomWidth: 1,
+                      borderBottomColor: COLORS.border,
+                      backgroundColor: selectedHemocenter === item.id ? COLORS.light : "transparent"
+                    }}
+                  >
+                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>{item.name}</Text>
+                    <SmallText>{item.address}</SmallText>
+                    <Row style={{ marginTop: 4 }}>
+                      <Ionicons name="location-outline" size={14} color={COLORS.primary} />
+                      <SmallText style={{ marginLeft: 4, color: COLORS.primary }}>{item.distance}</SmallText>
+                    </Row>
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+          </View>
+        </Modal>
+
       </ScrollContainer>
     </Container>
   );

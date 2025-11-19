@@ -11,13 +11,14 @@ import {
   Subtitle,
   Text,
   SmallText,
-  Button,
+  GameButton,
   ButtonText,
   Row,
 } from "@/components/StyledComponents";
 import { COLORS } from "@/constants";
+import { MOCK_DONATION_HISTORY } from "@/constants/mocks";
 import { formatDate } from "@/utils";
-import { Donation, RootStackParamList } from "@/types";
+import { RootStackParamList } from "@/types";
 import { useAuth } from "@/contexts";
 
 type DonationsScreenNavigationProp = StackNavigationProp<
@@ -29,19 +30,20 @@ export default function DonationsScreen() {
   const navigation = useNavigation<DonationsScreenNavigationProp>();
   const { user, isLoading } = useAuth();
 
-  const donations: Donation[] = user?.donations || [];
+  // Use mock data instead of user.donations
+  const donations = MOCK_DONATION_HISTORY;
 
-  const renderDonationItem = ({ item }: { item: Donation }) => (
+  const renderDonationItem = ({ item }: { item: typeof MOCK_DONATION_HISTORY[0] }) => (
     <Card>
       <Row>
         <Ionicons name="water" size={40} color={COLORS.primary} />
         <View style={{ flex: 1, marginLeft: 12 }}>
           <Subtitle>{item.location}</Subtitle>
-          <SmallText>{formatDate(item.date)}</SmallText>
+          <SmallText>{formatDate(new Date(item.date))}</SmallText>
           <Row style={{ marginTop: 4 }}>
             <Ionicons name="star" size={16} color={COLORS.warning} />
             <SmallText style={{ marginLeft: 4 }}>
-              +{item.pointsEarned} pontos
+              +50 pontos
             </SmallText>
           </Row>
         </View>
@@ -102,9 +104,11 @@ export default function DonationsScreen() {
         </Card>
       )}
 
-      <Button onPress={() => navigation.navigate("RegisterDonation")}>
-        <ButtonText>Registrar Nova Doação</ButtonText>
-      </Button>
+      <View style={{ padding: 16 }}>
+        <GameButton variant="primary" onPress={() => navigation.navigate("RegisterDonation")}>
+          <ButtonText>Registrar Nova Doação</ButtonText>
+        </GameButton>
+      </View>
     </Container>
   );
 }

@@ -16,6 +16,7 @@ export interface User {
   lastDonationDate?: Date;
   notificationsEnabled?: boolean;
   expoPushToken?: string;
+  weight?: number; // Em kg
 }
 
 export type BloodType = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
@@ -95,6 +96,7 @@ export type RootStackParamList = {
   Impact: undefined;
   RegisterDonation: undefined;
   Notifications: undefined;
+  Raids: undefined;
   DonationDetail: { donationId: string };
 };
 

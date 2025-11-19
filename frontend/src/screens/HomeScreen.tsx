@@ -12,250 +12,259 @@ import {
   Subtitle,
   Text,
   SmallText,
-  Button,
+  GameButton,
   ButtonText,
   ProgressBar,
   ProgressFill,
   Row,
   Center,
+  Badge,
+  BadgeText,
 } from "@/components/StyledComponents";
 import DonationIntervalModal from "@/components/DonationIntervalModal";
-import DonationInfoButton from "@/components/DonationInfoButton";
 import { COLORS } from "@/constants";
 import { calculateLevel, getProgressToNextLevel, formatDate } from "@/utils";
-import { useAuth, useNotifications } from "@/contexts";
+import { useAuth } from "@/contexts";
 import { RootStackParamList } from "@/types";
+import Mascot from "@/components/Mascot";
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 export default function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const { user, isLoading } = useAuth();
-  const { unreadCount } = useNotifications();
   const [showIntervalModal, setShowIntervalModal] = useState(false);
 
-  // Show loading state
   if (isLoading) {
     return (
       <Container>
         <Center style={{ flex: 1 }}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={{ marginTop: 16 }}>Carregando...</Text>
         </Center>
       </Container>
     );
   }
 
-  // Show login prompt if no user
-  if (!user) {
-    return (
-      <Container>
-        <Center style={{ flex: 1 }}>
-          <Ionicons
-            name="person-circle-outline"
-            size={80}
-            color={COLORS.gray}
-          />
-          <Title style={{ marginTop: 16 }}>Faça login</Title>
-          <Text style={{ marginTop: 8, textAlign: "center" }}>
-            Entre para acessar seu perfil e agendar doações
-          </Text>
-          {/* TODO: Add navigation to login screen */}
-        </Center>
-      </Container>
-    );
-  }
+  if (!user) return null;
 
   const currentLevel = calculateLevel(user.points);
   const progress = getProgressToNextLevel(user.points);
-
-  const showDonationIntervalInfo = () => {
-    setShowIntervalModal(true);
-  };
-
-  const openScheduleScreen = () => {
-    navigation.navigate("Schedule");
-  };
-
-  const openImpactScreen = () => {
-    navigation.navigate("Impact");
-  };
 
   return (
     <Container>
       <StatusBar style="dark" />
       <ScrollContainer>
-        {/* Header with Notifications */}
-        <Card style={{ marginTop: 50 }}>
-          <Row
-            style={{ justifyContent: "space-between", alignItems: "center" }}
-          >
-            <Title>Olá, {user.name}!</Title>
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Notifications")}
-              style={{ position: "relative" }}
-            >
-              <Ionicons
-                name="notifications-outline"
-                size={28}
-                color={COLORS.dark}
-              />
-              {unreadCount > 0 && (
-                <View
-                  style={{
-                    position: "absolute",
-                    top: -4,
-                    right: -4,
-                    backgroundColor: COLORS.danger,
-                    borderRadius: 10,
-                    minWidth: 20,
-                    height: 20,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    paddingHorizontal: 4,
-                  }}
-                >
-                  <SmallText
-                    style={{
-                      color: COLORS.white,
-                      fontSize: 10,
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {unreadCount > 99 ? "99+" : unreadCount}
-                  </SmallText>
-                </View>
-              )}
-            </TouchableOpacity>
-          </Row>
-        </Card>
+        {/* Header Gamificado */}
+        <View
+          style={{
+            padding: 20,
+            paddingTop: 60,
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+          <View>
+            <Title style={{ fontSize: 24 }}>
+              Olá, {user.name.split(" ")[0]}!
+            </Title>
+            <Text style={{ fontWeight: "bold", color: COLORS.mediumGray }}>
+              Vamos salvar vidas hoje?
+            </Text>
+          </View>
+          <View style={{ marginLeft: "auto" }}>
+            {/* Mini Mascote no Header */}
+            <Mascot size={60} expression="wink" />
+          </View>
+        </View>
 
-        {/* Level Card */}
-        <Card>
-          <Row>
-            <Ionicons name="trophy" size={32} color={COLORS.primary} />
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Subtitle>
-                Nível {currentLevel.level}: {currentLevel.name}
-              </Subtitle>
-              <SmallText>{user.points} pontos</SmallText>
-            </View>
-          </Row>
-          <ProgressBar>
-            <ProgressFill progress={progress} />
-          </ProgressBar>
-          <SmallText>{progress.toFixed(0)}% para o próximo nível</SmallText>
-        </Card>
-
-        {/* Stats Card */}
-        <Card>
-          <Subtitle>Suas Estatísticas</Subtitle>
-          <Row style={{ marginTop: 12 }}>
-            <Center style={{ flex: 1 }}>
-              <Ionicons name="water" size={32} color={COLORS.primary} />
-              <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 8 }}>
-                {user.totalDonations}
-              </Text>
-              <SmallText>Doações</SmallText>
-            </Center>
-            <Center style={{ flex: 1 }}>
-              <Row style={{ alignItems: "center", justifyContent: "center" }}>
-                <Ionicons name="calendar" size={32} color={COLORS.secondary} />
-                <DonationInfoButton onPress={showDonationIntervalInfo} />
-              </Row>
-              <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 8 }}>
-                {user.lastDonationDate
-                  ? formatDate(user.lastDonationDate)
-                  : "N/A"}
-              </Text>
-              <SmallText>Última doação</SmallText>
-            </Center>
-          </Row>
-        </Card>
-
-        {/* Impact Card */}
-        <TouchableOpacity onPress={openImpactScreen} activeOpacity={0.8}>
+        {/* Card de Nível (Estilo Banner) */}
+        <View style={{ paddingHorizontal: 16 }}>
           <Card
             style={{
-              backgroundColor: COLORS.primary + "10",
-              borderWidth: 2,
-              borderColor: COLORS.primary + "30",
-              shadowColor: COLORS.primary,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 8,
+              backgroundColor: COLORS.secondary,
+              borderColor: COLORS.secondaryDark,
+              margin: 0,
             }}
           >
-            <Row
-              style={{ justifyContent: "space-between", alignItems: "center" }}
-            >
-              <Subtitle style={{ color: COLORS.primary, fontSize: 18 }}>
-                Seu Impacto ✨
-              </Subtitle>
-              <Ionicons
-                name="chevron-forward"
-                size={24}
-                color={COLORS.primary}
-              />
-            </Row>
-            <Row style={{ marginTop: 16, alignItems: "center" }}>
-              <View
-                style={{
-                  backgroundColor: COLORS.primary,
-                  borderRadius: 25,
-                  padding: 12,
-                  marginRight: 16,
-                }}
-              >
-                <Ionicons name="heart" size={32} color={COLORS.white} />
-              </View>
+            <Row>
               <View style={{ flex: 1 }}>
                 <Text
                   style={{
-                    fontSize: 28,
-                    fontWeight: "bold",
-                    color: COLORS.primary,
+                    color: "rgba(255,255,255,0.8)",
+                    fontWeight: "700",
+                    fontSize: 14,
                   }}
                 >
-                  {user.totalDonations * 4} vidas
+                  NÍVEL ATUAL
                 </Text>
-                <Text style={{ fontSize: 16, marginTop: 4 }}>
-                  que você ajudou a salvar!
+                <Text
+                  style={{
+                    color: COLORS.white,
+                    fontSize: 22,
+                    fontWeight: "900",
+                    marginBottom: 8,
+                  }}
+                >
+                  {currentLevel.name}
                 </Text>
+                <Badge
+                  style={{
+                    alignSelf: "flex-start",
+                    backgroundColor: "rgba(0,0,0,0.2)",
+                    borderColor: "transparent",
+                  }}
+                >
+                  <BadgeText>{user.points} XP</BadgeText>
+                </Badge>
               </View>
+              <Ionicons name="trophy" size={64} color={COLORS.warning} />
             </Row>
-            <Row
+            <View style={{ marginTop: 16 }}>
+              <ProgressBar style={{ backgroundColor: "rgba(0,0,0,0.2)" }}>
+                <ProgressFill
+                  progress={progress}
+                  style={{ backgroundColor: COLORS.warning }}
+                />
+              </ProgressBar>
+              <Text
+                style={{
+                  color: COLORS.white,
+                  textAlign: "right",
+                  fontWeight: "700",
+                  fontSize: 12,
+                }}
+              >
+                {progress.toFixed(0)}% para o próximo nível
+              </Text>
+            </View>
+          </Card>
+        </View>
+
+        {/* Ações Principais */}
+        <View style={{ padding: 16 }}>
+          <GameButton
+            variant="primary"
+            onPress={() => navigation.navigate("Schedule")}
+          >
+            <ButtonText>AGENDAR DOAÇÃO</ButtonText>
+          </GameButton>
+        </View>
+
+        {/* Status Grid */}
+        <View style={{ flexDirection: "row", paddingHorizontal: 8 }}>
+          <View style={{ flex: 1 }}>
+            <Card>
+              <Center>
+                <Ionicons name="water" size={32} color={COLORS.primary} />
+                <Title style={{ fontSize: 32, marginBottom: 0, marginTop: 8 }}>
+                  {user.totalDonations}
+                </Title>
+                <SmallText
+                  style={{ textTransform: "uppercase", letterSpacing: 1 }}
+                >
+                  Doações
+                </SmallText>
+              </Center>
+            </Card>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Card>
+              <Center>
+                <Ionicons name="heart" size={32} color={COLORS.success} />
+                <Title style={{ fontSize: 32, marginBottom: 0, marginTop: 8 }}>
+                  {user.totalDonations * 4}
+                </Title>
+                <SmallText
+                  style={{ textTransform: "uppercase", letterSpacing: 1 }}
+                >
+                  Vidas
+                </SmallText>
+              </Center>
+            </Card>
+          </View>
+        </View>
+
+        {/* Card Informativo */}
+        <TouchableOpacity
+          onPress={() => setShowIntervalModal(true)}
+          activeOpacity={0.8}
+        >
+          <Card style={{ flexDirection: "row", alignItems: "center" }}>
+            <View
               style={{
-                marginTop: 16,
-                padding: 12,
-                backgroundColor: COLORS.white,
-                borderRadius: 8,
-                justifyContent: "space-between",
-                alignItems: "center",
+                backgroundColor: COLORS.light,
+                padding: 10,
+                borderRadius: 12,
+                marginRight: 16,
               }}
             >
-              <SmallText style={{ color: COLORS.gray }}>
-                Toque para ver onde suas doações foram utilizadas
-              </SmallText>
-              <Ionicons name="eye" size={16} color={COLORS.gray} />
-            </Row>
+              <Ionicons name="calendar" size={28} color={COLORS.secondary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Subtitle style={{ fontSize: 18, marginBottom: 2 }}>
+                Próxima Doação
+              </Subtitle>
+              <Text style={{ color: COLORS.mediumGray }}>
+                {user.lastDonationDate ? "Calculando..." : "Disponível agora!"}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color={COLORS.border} />
           </Card>
         </TouchableOpacity>
 
-        {/* Action Button */}
-        <Button onPress={openScheduleScreen}>
-          <ButtonText>Agendar Nova Doação</ButtonText>
-        </Button>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Impact")}
+          activeOpacity={0.8}
+        >
+          <Card style={{ flexDirection: "row", alignItems: "center" }}>
+            <View
+              style={{
+                backgroundColor: COLORS.light,
+                padding: 10,
+                borderRadius: 12,
+                marginRight: 16,
+              }}
+            >
+              <Ionicons name="stats-chart" size={28} color={COLORS.warning} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Subtitle style={{ fontSize: 18, marginBottom: 2 }}>
+                Ver Impacto
+              </Subtitle>
+              <Text style={{ color: COLORS.mediumGray }}>
+                Onde seu sangue chegou
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color={COLORS.border} />
+          </Card>
+        </TouchableOpacity>
 
-        {/* Info Card */}
-        <Card>
-          <Subtitle>Por que doar sangue?</Subtitle>
-          <Text style={{ marginTop: 8 }}>
-            A doação de sangue é um ato de solidariedade que salva vidas. Uma
-            única doação pode beneficiar até 4 pessoas.
-          </Text>
-        </Card>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Raids")}
+          activeOpacity={0.8}
+        >
+          <Card style={{ flexDirection: "row", alignItems: "center" }}>
+            <View
+              style={{
+                backgroundColor: COLORS.light,
+                padding: 10,
+                borderRadius: 12,
+                marginRight: 16,
+              }}
+            >
+              <Ionicons name="people" size={28} color={COLORS.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Subtitle style={{ fontSize: 18, marginBottom: 2 }}>
+                Raids & Squads
+              </Subtitle>
+              <Text style={{ color: COLORS.mediumGray }}>
+                Doe em grupo e suba de nível
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color={COLORS.border} />
+          </Card>
+        </TouchableOpacity>
       </ScrollContainer>
 
       <DonationIntervalModal

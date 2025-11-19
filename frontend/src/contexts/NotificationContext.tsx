@@ -15,7 +15,7 @@ import {
   setBadgeCount,
 } from "@/services/notificationService";
 import { API_BASE_URL } from "@/config/api";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "@/contexts";
 import { RootStackParamList } from "@/types";
 
 interface NotificationContextState {

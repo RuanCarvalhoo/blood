@@ -14,10 +14,11 @@ import LoginScreen from "@/screens/LoginScreen";
 import RegisterScreen from "@/screens/RegisterScreen";
 import RegisterDonationScreen from "@/screens/RegisterDonationScreen";
 import NotificationsScreen from "@/screens/NotificationsScreen";
+import RaidsScreen from "@/screens/RaidsScreen";
 
 import { RootStackParamList, TabParamList } from "@/types";
 import { COLORS } from "@/constants";
-import { useAuth, useNotifications } from "@/contexts/AuthContext";
+import { useAuth, useNotifications } from "@/contexts";
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
@@ -112,6 +113,13 @@ export default function AppNavigator() {
             component={NotificationsScreen}
             options={{
               presentation: "modal",
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="Raids"
+            component={RaidsScreen}
+            options={{
               headerShown: false,
             }}
           />

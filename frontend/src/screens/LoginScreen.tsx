@@ -1,19 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
   Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StyleSheet,
 } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts";
 import { RootStackParamList } from "@/types";
+import {
+  Container,
+  GameButton,
+  ButtonText,
+  Title,
+  Text,
+  Input,
+  Center,
+} from "@/components/StyledComponents";
+import { COLORS } from "@/constants";
+import Mascot from "@/components/Mascot";
 
 type LoginScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -29,165 +37,92 @@ export default function LoginScreen({ navigation }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const placeholderColor = "#9ca3af";
-
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Erro", "Preencha todos os campos");
+      Alert.alert("Ops!", "Preencha todos os campos para continuar.");
       return;
     }
 
     try {
       await login(email, password);
     } catch (error: any) {
-      Alert.alert("Erro ao fazer login", error.message || "Tente novamente");
+      Alert.alert("Erro ao entrar", error.message || "Verifique seus dados.");
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <Text style={styles.logo}>🩸</Text>
-          <Text style={styles.title}>Doação de Sangue</Text>
-          <Text style={styles.subtitle}>Entre para continuar</Text>
-        </View>
+    <Container>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {/* Área do Mascote e Boas-vindas */}
+          <Center style={{ marginBottom: 40, marginTop: 60 }}>
+            <Mascot size={180} expression="happy" />
+            <Title style={{ marginTop: 24, color: COLORS.primary }}>
+              Salva
+            </Title>
+            <Text style={{ fontWeight: "bold", color: COLORS.mediumGray }}>
+              Doe sangue, salve vidas, ganhe níveis!
+            </Text>
+          </Center>
 
-        <View style={styles.form}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>E-mail</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="seu@email.com"
-              placeholderTextColor={placeholderColor}
+          <View style={styles.form}>
+            <Input
+              placeholder="E-mail"
+              placeholderTextColor={COLORS.mediumGray}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
-              autoComplete="email"
               editable={!isLoading}
             />
-          </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Senha</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="••••••••"
-              placeholderTextColor={placeholderColor}
+            <Input
+              placeholder="Senha"
+              placeholderTextColor={COLORS.mediumGray}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
-              autoComplete="password"
               editable={!isLoading}
             />
+
+            <GameButton
+              variant="primary"
+              onPress={handleLogin}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color={COLORS.white} />
+              ) : (
+                <ButtonText>ENTRAR</ButtonText>
+              )}
+            </GameButton>
+
+            <View style={{ marginTop: 10 }}>
+              <GameButton
+                variant="outline"
+                onPress={() => navigation.navigate("Register")}
+                disabled={isLoading}
+              >
+                <ButtonText variant="outline">CRIAR CONTA GRÁTIS</ButtonText>
+              </GameButton>
+            </View>
           </View>
-
-          <TouchableOpacity
-            style={[styles.button, isLoading && styles.buttonDisabled]}
-            onPress={handleLogin}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Entrar</Text>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.linkButton}
-            onPress={() => navigation.navigate("Register")}
-            disabled={isLoading}
-          >
-            <Text style={styles.linkText}>
-              Não tem uma conta?{" "}
-              <Text style={styles.linkTextBold}>Cadastre-se</Text>
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </Container>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
   scrollContent: {
     flexGrow: 1,
     justifyContent: "center",
     padding: 24,
   },
-  header: {
-    alignItems: "center",
-    marginBottom: 48,
-  },
-  logo: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#dc2626",
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#6b7280",
-  },
   form: {
     width: "100%",
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#374151",
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: "#f9fafb",
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: "#1f2937",
-  },
-  button: {
-    backgroundColor: "#dc2626",
-    borderRadius: 12,
-    padding: 16,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  linkButton: {
-    marginTop: 16,
-    alignItems: "center",
-  },
-  linkText: {
-    fontSize: 14,
-    color: "#6b7280",
-  },
-  linkTextBold: {
-    color: "#dc2626",
-    fontWeight: "600",
   },
 });

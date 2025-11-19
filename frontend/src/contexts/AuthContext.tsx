@@ -26,6 +26,7 @@ interface RegisterData {
   password: string;
   bloodType: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
   gender: "MALE" | "FEMALE";
+  weight?: number;
 }
 
 const AuthContext = createContext<AuthContextState | undefined>(undefined);

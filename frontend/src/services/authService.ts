@@ -14,6 +14,7 @@ export interface RegisterData {
   password: string;
   bloodType: BloodType;
   gender: "MALE" | "FEMALE";
+  weight?: number;
 }
 
 export interface LoginData {
@@ -26,54 +27,63 @@ export interface AuthResponse {
   user: User;
 }
 
+// Mock User Data
+const MOCK_USER: User = {
+  id: "1",
+  name: "Usuário de Teste",
+  email: "teste@exemplo.com",
+  bloodType: "O+",
+  gender: "male",
+  level: 5,
+  points: 1250,
+  totalDonations: 8,
+  totalDonationsThisYear: 2,
+  badges: [],
+  lastDonationDate: new Date("2023-08-15"),
+  weight: 70,
+};
+
 class AuthService {
   /**
    * Register a new user
    */
   async register(data: RegisterData): Promise<AuthResponse> {
-    // Convert frontend BloodType format to backend format
-    const bloodTypeMap: Record<BloodType, string> = {
-      "A+": "A_POS",
-      "A-": "A_NEG",
-      "B+": "B_POS",
-      "B-": "B_NEG",
-      "AB+": "AB_POS",
-      "AB-": "AB_NEG",
-      "O+": "O_POS",
-      "O-": "O_NEG",
+    console.log("MOCK REGISTER:", data);
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const newUser: User = {
+      ...MOCK_USER,
+      name: data.name,
+      email: data.email,
+      bloodType: data.bloodType,
+      gender: data.gender === "MALE" ? "male" : "female",
+      weight: data.weight,
     };
 
-    const backendData = {
-      ...data,
-      bloodType: bloodTypeMap[data.bloodType],
+    return {
+      token: "mock-jwt-token",
+      user: newUser,
     };
-
-    const response = await httpClient.post<AuthResponse>(
-      API_ENDPOINTS.REGISTER,
-      backendData
-    );
-
-    if (response.token) {
-      httpClient.setToken(response.token);
-    }
-
-    return response;
   }
 
   /**
    * Login user
    */
   async login(data: LoginData): Promise<AuthResponse> {
-    const response = await httpClient.post<AuthResponse>(
-      API_ENDPOINTS.LOGIN,
-      data
-    );
+    console.log("MOCK LOGIN:", data);
 
-    if (response.token) {
-      httpClient.setToken(response.token);
-    }
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    return response;
+    return {
+      token: "mock-jwt-token",
+      user: {
+        ...MOCK_USER,
+        email: data.email,
+      },
+    };
   }
 
   /**

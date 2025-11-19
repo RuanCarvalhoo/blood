@@ -1,21 +1,29 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
   Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StyleSheet,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts";
 import { BloodType } from "@/types";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "@/types";
+import {
+  Container,
+  GameButton,
+  ButtonText,
+  Title,
+  Text,
+  Input,
+  Center,
+} from "@/components/StyledComponents";
+import { COLORS } from "@/constants";
+import Mascot from "@/components/Mascot";
 
 type RegisterScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -31,12 +39,11 @@ export default function RegisterScreen({ navigation }: Props) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [telephone, setTelephone] = useState("");
+  const [weight, setWeight] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [bloodType, setBloodType] = useState<BloodType>("O+");
   const [gender, setGender] = useState<"MALE" | "FEMALE">("MALE");
-
-  const placeholderColor = "#9ca3af";
 
   const bloodTypes: BloodType[] = [
     "A+",
@@ -50,8 +57,13 @@ export default function RegisterScreen({ navigation }: Props) {
   ];
 
   const handleRegister = async () => {
-    if (!name || !email || !telephone || !password || !confirmPassword) {
+    if (!name || !email || !telephone || !password || !confirmPassword || !weight) {
       Alert.alert("Erro", "Preencha todos os campos");
+      return;
+    }
+
+    if (parseFloat(weight) < 50) {
+      Alert.alert("Atenção", "Para doar sangue é necessário pesar no mínimo 50kg.");
       return;
     }
 
@@ -79,6 +91,7 @@ export default function RegisterScreen({ navigation }: Props) {
         password,
         bloodType,
         gender,
+        weight: parseFloat(weight),
       });
       Alert.alert("Sucesso", "Cadastro realizado com sucesso!");
     } catch (error: any) {
@@ -87,37 +100,35 @@ export default function RegisterScreen({ navigation }: Props) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <Text style={styles.logo}>🩸</Text>
-          <Text style={styles.title}>Criar Conta</Text>
-          <Text style={styles.subtitle}>Junte-se à comunidade de doadores</Text>
-        </View>
+    <Container>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <Center style={{ marginBottom: 32, marginTop: 40 }}>
+            <Mascot size={120} expression="happy" />
+            <Title style={{ marginTop: 16, color: COLORS.primary }}>
+              Criar Conta
+            </Title>
+            <Text style={{ fontWeight: "bold", color: COLORS.mediumGray }}>
+              Junte-se à comunidade de doadores!
+            </Text>
+          </Center>
 
-        <View style={styles.form}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Nome completo</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="João Silva"
-              placeholderTextColor={placeholderColor}
+          <View style={styles.form}>
+            <Input
+              placeholder="Nome completo"
+              placeholderTextColor={COLORS.mediumGray}
               value={name}
               onChangeText={setName}
               autoCapitalize="words"
               editable={!isLoading}
             />
-          </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>E-mail</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="seu@email.com"
-              placeholderTextColor={placeholderColor}
+            <Input
+              placeholder="E-mail"
+              placeholderTextColor={COLORS.mediumGray}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -125,193 +136,132 @@ export default function RegisterScreen({ navigation }: Props) {
               autoComplete="email"
               editable={!isLoading}
             />
-          </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Telefone</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="(11) 99999-9999"
-              placeholderTextColor={placeholderColor}
+            <Input
+              placeholder="Telefone (11) 99999-9999"
+              placeholderTextColor={COLORS.mediumGray}
               value={telephone}
               onChangeText={setTelephone}
               keyboardType="phone-pad"
               editable={!isLoading}
             />
-          </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Tipo Sanguíneo</Text>
+            <Input
+              placeholder="Peso (kg)"
+              placeholderTextColor={COLORS.mediumGray}
+              value={weight}
+              onChangeText={setWeight}
+              keyboardType="numeric"
+              editable={!isLoading}
+            />
+
             <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={bloodType}
-                onValueChange={(itemValue) => setBloodType(itemValue)}
-                style={styles.picker}
-                enabled={!isLoading}
-              >
-                {bloodTypes.map((type) => (
-                  <Picker.Item key={type} label={type} value={type} />
-                ))}
-              </Picker>
+              <Text style={styles.label}>Tipo Sanguíneo</Text>
+              <View style={styles.pickerWrapper}>
+                <Picker
+                  selectedValue={bloodType}
+                  onValueChange={(itemValue) => setBloodType(itemValue)}
+                  style={styles.picker}
+                  enabled={!isLoading}
+                >
+                  {bloodTypes.map((type) => (
+                    <Picker.Item key={type} label={type} value={type} />
+                  ))}
+                </Picker>
+              </View>
             </View>
-          </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Gênero</Text>
             <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={gender}
-                onValueChange={(itemValue) => setGender(itemValue)}
-                style={styles.picker}
-                enabled={!isLoading}
-              >
-                <Picker.Item label="Masculino" value="MALE" />
-                <Picker.Item label="Feminino" value="FEMALE" />
-              </Picker>
+              <Text style={styles.label}>Gênero</Text>
+              <View style={styles.pickerWrapper}>
+                <Picker
+                  selectedValue={gender}
+                  onValueChange={(itemValue) => setGender(itemValue)}
+                  style={styles.picker}
+                  enabled={!isLoading}
+                >
+                  <Picker.Item label="Masculino" value="MALE" />
+                  <Picker.Item label="Feminino" value="FEMALE" />
+                </Picker>
+              </View>
             </View>
-          </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Senha</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="••••••••"
-              placeholderTextColor={placeholderColor}
+            <Input
+              placeholder="Senha"
+              placeholderTextColor={COLORS.mediumGray}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
               autoComplete="password"
               editable={!isLoading}
             />
-          </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Confirmar Senha</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="••••••••"
-              placeholderTextColor={placeholderColor}
+            <Input
+              placeholder="Confirmar Senha"
+              placeholderTextColor={COLORS.mediumGray}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry
               autoComplete="password"
               editable={!isLoading}
             />
+
+            <GameButton
+              variant="primary"
+              onPress={handleRegister}
+              disabled={isLoading}
+              style={{ marginTop: 16 }}
+            >
+              {isLoading ? (
+                <ActivityIndicator color={COLORS.white} />
+              ) : (
+                <ButtonText>CADASTRAR</ButtonText>
+              )}
+            </GameButton>
+
+            <GameButton
+              variant="outline"
+              onPress={() => navigation.navigate("Login")}
+              disabled={isLoading}
+            >
+              <ButtonText variant="outline">JÁ TENHO CONTA</ButtonText>
+            </GameButton>
           </View>
-
-          <TouchableOpacity
-            style={[styles.button, isLoading && styles.buttonDisabled]}
-            onPress={handleRegister}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Cadastrar</Text>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.linkButton}
-            onPress={() => navigation.navigate("Login")}
-            disabled={isLoading}
-          >
-            <Text style={styles.linkText}>
-              Já tem uma conta?{" "}
-              <Text style={styles.linkTextBold}>Entre aqui</Text>
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </Container>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
   scrollContent: {
     flexGrow: 1,
     justifyContent: "center",
     padding: 24,
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 32,
-  },
-  logo: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#1f2937",
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#6b7280",
-    textAlign: "center",
+    paddingBottom: 40,
   },
   form: {
     width: "100%",
   },
-  inputGroup: {
+  pickerContainer: {
     marginBottom: 16,
   },
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#374151",
+    color: COLORS.dark,
     marginBottom: 8,
+    marginLeft: 4,
   },
-  input: {
-    backgroundColor: "#f9fafb",
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: "#1f2937",
-  },
-  pickerContainer: {
-    backgroundColor: "#f9fafb",
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: 8,
+  pickerWrapper: {
+    backgroundColor: COLORS.light,
+    borderWidth: 2,
+    borderColor: COLORS.border,
+    borderRadius: 16,
     overflow: "hidden",
   },
   picker: {
-    height: 50,
-  },
-  button: {
-    backgroundColor: "#dc2626",
-    borderRadius: 8,
-    padding: 16,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  linkButton: {
-    marginTop: 16,
-    alignItems: "center",
-  },
-  linkText: {
-    fontSize: 14,
-    color: "#6b7280",
-  },
-  linkTextBold: {
-    color: "#dc2626",
-    fontWeight: "600",
+    height: 55,
+    color: COLORS.dark,
   },
 });
