@@ -30,31 +30,51 @@ type ScheduleScreenNavigationProp = StackNavigationProp<
 export default function ScheduleScreen() {
   const navigation = useNavigation<ScheduleScreenNavigationProp>();
   const { user } = useAuth();
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [minDate, setMinDate] = useState<Date>(new Date());
-  const [showValidationMessage, setShowValidationMessage] = useState(false);
 
-  useEffect(() => {
-    calculateMinDate();
-  }, []);
+  // Initialize minDate immediately to avoid invalid date
+  const getInitialMinDate = () => {
+    if (!user) return new Date();
 
-  const calculateMinDate = () => {
-    if (!user) return;
+    const intervalDays = DONATION_INTERVAL_DAYS[user.gender] || 90; // Default to 90 days if gender not found
 
-    const intervalDays = DONATION_INTERVAL_DAYS[user.gender];
-    const lastDonation = user.lastDonationDate || new Date();
+    let lastDonation = new Date();
+    if (user.lastDonationDate) {
+      const parsedDate = new Date(user.lastDonationDate);
+      // Check if the parsed date is valid
+      if (!isNaN(parsedDate.getTime())) {
+        lastDonation = parsedDate;
+      }
+    }
 
     const minimumDate = new Date(lastDonation);
     minimumDate.setDate(minimumDate.getDate() + intervalDays);
 
-    setMinDate(minimumDate);
+    // Ensure the result is a valid date
+    if (isNaN(minimumDate.getTime())) {
+      return new Date();
+    }
+
+    return minimumDate;
   };
 
+  const [minDate] = useState<Date>(getInitialMinDate());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showValidationMessage, setShowValidationMessage] = useState(false);
+
   const handleDateChange = (event: any, date?: Date) => {
-    setShowDatePicker(Platform.OS === "ios");
+    if (Platform.OS !== "web") {
+      setShowDatePicker(Platform.OS === "ios");
+    }
     if (date) {
       setSelectedDate(date);
+    }
+  };
+
+  const handleWebDateChange = (e: any) => {
+    const dateValue = e.target.value;
+    if (dateValue) {
+      setSelectedDate(new Date(dateValue));
     }
   };
 
@@ -112,37 +132,73 @@ export default function ScheduleScreen() {
             Horário: 8h às 17h (Segunda a Sexta)
           </SmallText>
 
-          <TouchableOpacity
-            style={{
-              backgroundColor: COLORS.light,
-              padding: 16,
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor: COLORS.primary,
-              alignItems: "center",
-            }}
-            onPress={() => setShowDatePicker(true)}
-          >
-            <Row style={{ alignItems: "center" }}>
-              <Ionicons name="calendar" size={24} color={COLORS.primary} />
-              <Text
-                style={{ marginLeft: 12, fontSize: 16, color: COLORS.dark }}
+          {Platform.OS === "web" ? (
+            <View
+              style={{
+                backgroundColor: COLORS.light,
+                padding: 16,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: COLORS.primary,
+              }}
+            >
+              <input
+                type="date"
+                value={
+                  selectedDate ? selectedDate.toISOString().split("T")[0] : ""
+                }
+                onChange={handleWebDateChange}
+                min={minDate.toISOString().split("T")[0]}
+                style={{
+                  fontSize: 16,
+                  color: COLORS.dark,
+                  backgroundColor: "transparent",
+                  border: "none",
+                  outline: "none",
+                  width: "100%",
+                  fontFamily: "inherit",
+                }}
+              />
+            </View>
+          ) : (
+            <>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: COLORS.light,
+                  padding: 16,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: COLORS.primary,
+                  alignItems: "center",
+                }}
+                onPress={() => setShowDatePicker(true)}
               >
-                {selectedDate
-                  ? formatDate(selectedDate)
-                  : "Toque para selecionar"}
-              </Text>
-            </Row>
-          </TouchableOpacity>
+                <Row style={{ alignItems: "center" }}>
+                  <Ionicons name="calendar" size={24} color={COLORS.primary} />
+                  <Text
+                    style={{
+                      marginLeft: 12,
+                      fontSize: 16,
+                      color: COLORS.dark,
+                    }}
+                  >
+                    {selectedDate
+                      ? formatDate(selectedDate)
+                      : "Toque para selecionar"}
+                  </Text>
+                </Row>
+              </TouchableOpacity>
 
-          {showDatePicker && (
-            <DateTimePicker
-              value={selectedDate || minDate}
-              mode="date"
-              display="default"
-              minimumDate={minDate}
-              onChange={handleDateChange}
-            />
+              {showDatePicker && (
+                <DateTimePicker
+                  value={selectedDate || minDate}
+                  mode="date"
+                  display="default"
+                  minimumDate={minDate}
+                  onChange={handleDateChange}
+                />
+              )}
+            </>
           )}
         </Card>
 

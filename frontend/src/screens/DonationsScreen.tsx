@@ -2,6 +2,8 @@ import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { View, FlatList, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import {
   Container,
   Card,
@@ -15,10 +17,16 @@ import {
 } from "@/components/StyledComponents";
 import { COLORS } from "@/constants";
 import { formatDate } from "@/utils";
-import { Donation } from "@/types";
+import { Donation, RootStackParamList } from "@/types";
 import { useAuth } from "@/contexts";
 
+type DonationsScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  "MainTabs"
+>;
+
 export default function DonationsScreen() {
+  const navigation = useNavigation<DonationsScreenNavigationProp>();
   const { user, isLoading } = useAuth();
 
   const donations: Donation[] = user?.donations || [];
@@ -94,7 +102,7 @@ export default function DonationsScreen() {
         </Card>
       )}
 
-      <Button>
+      <Button onPress={() => navigation.navigate("RegisterDonation")}>
         <ButtonText>Registrar Nova Doação</ButtonText>
       </Button>
     </Container>

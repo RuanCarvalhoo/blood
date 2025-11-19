@@ -1,7 +1,9 @@
 import React from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import {
   Container,
   ScrollContainer,
@@ -19,10 +21,15 @@ import {
 } from "@/components/StyledComponents";
 import { COLORS } from "@/constants";
 import { calculateLevel } from "@/utils";
-import { useAuth } from "@/contexts";
+import { useAuth, useNotifications } from "@/contexts";
+import { RootStackParamList } from "@/types";
+
+type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 export default function ProfileScreen() {
+  const navigation = useNavigation<ProfileScreenNavigationProp>();
   const { user, isLoading, logout } = useAuth();
+  const { unreadCount } = useNotifications();
 
   // Show loading state
   if (isLoading) {
@@ -61,8 +68,48 @@ export default function ProfileScreen() {
     <Container>
       <StatusBar style="dark" />
       <ScrollContainer>
-        {/* Profile Header */}
-        <Card style={{ marginTop: 50 }}>
+        {/* Profile Header with Notifications */}
+        <Row style={{ marginTop: 50, marginBottom: 20, paddingHorizontal: 16 }}>
+          <View style={{ flex: 1 }} />
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Notifications")}
+            style={{ position: "relative" }}
+          >
+            <Ionicons
+              name="notifications-outline"
+              size={28}
+              color={COLORS.dark}
+            />
+            {unreadCount > 0 && (
+              <View
+                style={{
+                  position: "absolute",
+                  top: -4,
+                  right: -4,
+                  backgroundColor: COLORS.danger,
+                  borderRadius: 10,
+                  minWidth: 20,
+                  height: 20,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingHorizontal: 4,
+                }}
+              >
+                <SmallText
+                  style={{
+                    color: COLORS.white,
+                    fontSize: 10,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </SmallText>
+              </View>
+            )}
+          </TouchableOpacity>
+        </Row>
+
+        <Card>
           <Center>
             <View
               style={{

@@ -1,5 +1,5 @@
-import styled from 'styled-components/native';
-import { COLORS } from '../constants';
+import styled from "styled-components/native";
+import { COLORS } from "../constants";
 
 export const Container = styled.View`
   flex: 1;
@@ -48,9 +48,11 @@ export const SmallText = styled.Text`
   color: ${COLORS.gray};
 `;
 
-export const Button = styled.TouchableOpacity<{ variant?: 'primary' | 'secondary' }>`
-  background-color: ${(props: { variant?: 'primary' | 'secondary' }) =>
-    props.variant === 'secondary' ? COLORS.secondary : COLORS.primary};
+export const Button = styled.TouchableOpacity<{
+  variant?: "primary" | "secondary";
+}>`
+  background-color: ${(props: { variant?: "primary" | "secondary" }) =>
+    props.variant === "secondary" ? COLORS.secondary : COLORS.primary};
   padding: 16px;
   border-radius: 8px;
   align-items: center;
@@ -101,4 +103,14 @@ export const Row = styled.View`
 export const Center = styled.View`
   align-items: center;
   justify-content: center;
+`;
+
+export const Input = styled.TextInput`
+  background-color: ${COLORS.light};
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 16px;
+  color: ${COLORS.dark};
+  border-width: 1px;
+  border-color: ${COLORS.gray}20;
 `;

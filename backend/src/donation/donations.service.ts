@@ -14,6 +14,7 @@ import {
 } from "@/domain/enums/enums";
 import { BadgesService } from "@/badges/badges.service";
 import { LevelsService } from "@/levels/levels.service";
+import { NotificationsService } from "@/notifications/notifications.service";
 
 @Injectable()
 export class DonationsService {
@@ -23,7 +24,8 @@ export class DonationsService {
     @Inject(IDonationRepository)
     private readonly donationRepository: IDonationRepository,
     private readonly badgesService: BadgesService,
-    private readonly levelsService: LevelsService
+    private readonly levelsService: LevelsService,
+    private readonly notificationsService: NotificationsService
   ) {}
 
   async register(data: RegisterDonationDto) {
@@ -74,6 +76,29 @@ export class DonationsService {
       data.userId,
       updatedUser.totalDonations
     );
+
+    // Send notifications asynchronously
+    if (newBadges.length > 0) {
+      for (const badge of newBadges) {
+        this.notificationsService
+          .notifyBadgeEarned(data.userId, badge.name)
+          .catch((err) =>
+            console.error("Failed to send badge notification", err)
+          );
+      }
+    }
+
+    if (levelUpInfo.leveledUp) {
+      this.notificationsService
+        .notifyLevelUp(
+          data.userId,
+          levelUpInfo.oldLevel.level,
+          levelUpInfo.newLevel.level
+        )
+        .catch((err) =>
+          console.error("Failed to send level up notification", err)
+        );
+    }
 
     return {
       donation,

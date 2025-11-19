@@ -7,6 +7,7 @@ import { UsersModule } from "@/users/users.module";
 import { DonationsModule } from "@/donation/donations.module";
 import { BadgesModule } from "@/badges/badges.module";
 import { LevelsModule } from "@/levels/levels.module";
+import { NotificationsModule } from "@/notifications/notifications.module";
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { LevelsModule } from "@/levels/levels.module";
     DonationsModule,
     BadgesModule,
     LevelsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
 })

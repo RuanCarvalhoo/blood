@@ -23,7 +23,7 @@ import DonationIntervalModal from "@/components/DonationIntervalModal";
 import DonationInfoButton from "@/components/DonationInfoButton";
 import { COLORS } from "@/constants";
 import { calculateLevel, getProgressToNextLevel, formatDate } from "@/utils";
-import { useAuth } from "@/contexts";
+import { useAuth, useNotifications } from "@/contexts";
 import { RootStackParamList } from "@/types";
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList>;
@@ -31,6 +31,7 @@ type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 export default function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const { user, isLoading } = useAuth();
+  const { unreadCount } = useNotifications();
   const [showIntervalModal, setShowIntervalModal] = useState(false);
 
   // Show loading state
@@ -84,9 +85,49 @@ export default function HomeScreen() {
     <Container>
       <StatusBar style="dark" />
       <ScrollContainer>
-        {/* Header */}
+        {/* Header with Notifications */}
         <Card style={{ marginTop: 50 }}>
-          <Title>Olá, {user.name}!</Title>
+          <Row
+            style={{ justifyContent: "space-between", alignItems: "center" }}
+          >
+            <Title>Olá, {user.name}!</Title>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Notifications")}
+              style={{ position: "relative" }}
+            >
+              <Ionicons
+                name="notifications-outline"
+                size={28}
+                color={COLORS.dark}
+              />
+              {unreadCount > 0 && (
+                <View
+                  style={{
+                    position: "absolute",
+                    top: -4,
+                    right: -4,
+                    backgroundColor: COLORS.danger,
+                    borderRadius: 10,
+                    minWidth: 20,
+                    height: 20,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingHorizontal: 4,
+                  }}
+                >
+                  <SmallText
+                    style={{
+                      color: COLORS.white,
+                      fontSize: 10,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </SmallText>
+                </View>
+              )}
+            </TouchableOpacity>
+          </Row>
         </Card>
 
         {/* Level Card */}

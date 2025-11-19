@@ -14,6 +14,8 @@ export interface User {
   donationHistory?: DonationHistory[];
   nextDonationDate?: Date;
   lastDonationDate?: Date;
+  notificationsEnabled?: boolean;
+  expoPushToken?: string;
 }
 
 export type BloodType = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
@@ -91,6 +93,8 @@ export type RootStackParamList = {
   MainTabs: undefined;
   Schedule: undefined;
   Impact: undefined;
+  RegisterDonation: undefined;
+  Notifications: undefined;
   DonationDetail: { donationId: string };
 };
 

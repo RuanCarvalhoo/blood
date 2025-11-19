@@ -12,10 +12,12 @@ import ScheduleScreen from "@/screens/ScheduleScreen";
 import ImpactScreen from "@/screens/ImpactScreen";
 import LoginScreen from "@/screens/LoginScreen";
 import RegisterScreen from "@/screens/RegisterScreen";
+import RegisterDonationScreen from "@/screens/RegisterDonationScreen";
+import NotificationsScreen from "@/screens/NotificationsScreen";
 
 import { RootStackParamList, TabParamList } from "@/types";
 import { COLORS } from "@/constants";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, useNotifications } from "@/contexts/AuthContext";
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
@@ -70,13 +72,14 @@ function TabNavigator() {
 
 export default function AppNavigator() {
   const { isAuthenticated, isLoading } = useAuth();
+  const { navigationRef } = useNotifications();
 
   if (isLoading) {
     return null;
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       {isAuthenticated ? (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="MainTabs" component={TabNavigator} />
@@ -91,6 +94,22 @@ export default function AppNavigator() {
           <Stack.Screen
             name="Impact"
             component={ImpactScreen}
+            options={{
+              presentation: "modal",
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="RegisterDonation"
+            component={RegisterDonationScreen}
+            options={{
+              presentation: "modal",
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="Notifications"
+            component={NotificationsScreen}
             options={{
               presentation: "modal",
               headerShown: false,
