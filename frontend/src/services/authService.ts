@@ -41,6 +41,11 @@ const MOCK_USER: User = {
   badges: [],
   lastDonationDate: new Date("2023-08-15"),
   weight: 70,
+  profileCustomization: {
+    cardTheme: "default",
+    avatarFrame: "none",
+    profileTheme: "light",
+  },
 };
 
 class AuthService {

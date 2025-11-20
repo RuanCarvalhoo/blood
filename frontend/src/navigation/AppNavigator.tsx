@@ -15,6 +15,7 @@ import RegisterScreen from "@/screens/RegisterScreen";
 import RegisterDonationScreen from "@/screens/RegisterDonationScreen";
 import NotificationsScreen from "@/screens/NotificationsScreen";
 import RaidsScreen from "@/screens/RaidsScreen";
+import EditProfileScreen from "@/screens/EditProfileScreen";
 
 import { RootStackParamList, TabParamList } from "@/types";
 import { COLORS } from "@/constants";
@@ -119,6 +120,13 @@ export default function AppNavigator() {
           <Stack.Screen
             name="Raids"
             component={RaidsScreen}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="EditProfile"
+            component={EditProfileScreen}
             options={{
               headerShown: false,
             }}

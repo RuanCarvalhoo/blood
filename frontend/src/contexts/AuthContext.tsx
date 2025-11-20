@@ -17,6 +17,7 @@ interface AuthContextState {
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  updateUser: (user: User) => Promise<void>;
 }
 
 interface RegisterData {
@@ -116,6 +117,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const updateUser = async (updatedUser: User) => {
+    setUser(updatedUser);
+    await storageService.saveUser(updatedUser);
+  };
+
   const value: AuthContextState = {
     user,
     token,
@@ -125,6 +131,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     register,
     logout,
     refreshUser,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

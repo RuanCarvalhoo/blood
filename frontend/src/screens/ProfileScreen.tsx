@@ -25,6 +25,7 @@ import { MOCK_DONATION_HISTORY } from "@/constants/mocks";
 import { calculateLevel, formatDate } from "@/utils";
 import { useAuth, useNotifications } from "@/contexts";
 import { RootStackParamList } from "@/types";
+import AvatarWithFrame from "@/components/AvatarWithFrame";
 
 type ProfileScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -63,10 +64,25 @@ export default function ProfileScreen() {
   }
 
   const currentLevel = calculateLevel(user.points);
+  const profileTheme = user.profileCustomization?.profileTheme || "light";
+  const avatarFrame = user.profileCustomization?.avatarFrame || "none";
+
+  const getThemeColors = () => {
+    switch (profileTheme) {
+      case "dark":
+        return { bg: "#121212", text: "#FFF", card: "#1E1E1E", border: "#333" };
+      case "red":
+        return { bg: "#FFF0F0", text: "#333", card: "#FFF", border: "#FFCDD2" };
+      default:
+        return { bg: COLORS.background, text: COLORS.dark, card: COLORS.white, border: COLORS.border };
+    }
+  };
+
+  const themeColors = getThemeColors();
 
   return (
-    <Container>
-      <StatusBar style="dark" />
+    <Container style={{ backgroundColor: themeColors.bg }}>
+      <StatusBar style={profileTheme === "dark" ? "light" : "dark"} />
       <ScrollContainer contentContainerStyle={{ paddingBottom: 40 }}>
         {/* Profile Header with Notifications */}
         <Row style={{ marginTop: 50, marginBottom: 20, paddingHorizontal: 16 }}>
@@ -78,7 +94,7 @@ export default function ProfileScreen() {
             <Ionicons
               name="notifications-outline"
               size={28}
-              color={COLORS.dark}
+              color={themeColors.text}
             />
             {unreadCount > 0 && (
               <View
@@ -109,49 +125,58 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </Row>
 
+        {/* Avatar Section */}
+        <Center style={{ marginBottom: 24 }}>
+             {/* @ts-ignore - Import AvatarWithFrame if not already imported */}
+            <AvatarWithFrame 
+                frame={avatarFrame} 
+                size={120} 
+            />
+        </Center>
+
         <DigitalCard user={user} />
 
         {/* Stats Card */}
-        <Card>
-          <Subtitle>Estatísticas</Subtitle>
+        <Card style={{ backgroundColor: themeColors.card, borderColor: themeColors.border }}>
+          <Subtitle style={{ color: themeColors.text }}>Estatísticas</Subtitle>
           <Row style={{ marginTop: 12, marginBottom: 12 }}>
             <Center style={{ flex: 1 }}>
               <Ionicons name="trophy" size={32} color={COLORS.warning} />
-              <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 8 }}>
+              <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 8, color: themeColors.text }}>
                 {user.points}
               </Text>
-              <SmallText>Pontos</SmallText>
+              <SmallText style={{ color: themeColors.text, opacity: 0.7 }}>Pontos</SmallText>
             </Center>
             <Center style={{ flex: 1 }}>
               <Ionicons name="water" size={32} color={COLORS.primary} />
-              <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 8 }}>
+              <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 8, color: themeColors.text }}>
                 {user.totalDonations}
               </Text>
-              <SmallText>Doações</SmallText>
+              <SmallText style={{ color: themeColors.text, opacity: 0.7 }}>Doações</SmallText>
             </Center>
             <Center style={{ flex: 1 }}>
               <Ionicons name="people" size={32} color={COLORS.success} />
-              <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 8 }}>
+              <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 8, color: themeColors.text }}>
                 {user.totalDonations * 4}
               </Text>
-              <SmallText>Vidas Salvas</SmallText>
+              <SmallText style={{ color: themeColors.text, opacity: 0.7 }}>Vidas Salvas</SmallText>
             </Center>
           </Row>
         </Card>
 
         {/* Donation History */}
-        <Card>
-          <Subtitle>Histórico de Doações</Subtitle>
+        <Card style={{ backgroundColor: themeColors.card, borderColor: themeColors.border }}>
+          <Subtitle style={{ color: themeColors.text }}>Histórico de Doações</Subtitle>
           {MOCK_DONATION_HISTORY.map((donation) => (
-            <View key={donation.id} style={{ marginTop: 16, borderBottomWidth: 1, borderBottomColor: COLORS.border, paddingBottom: 8 }}>
+            <View key={donation.id} style={{ marginTop: 16, borderBottomWidth: 1, borderBottomColor: themeColors.border, paddingBottom: 8 }}>
               <Row>
                 <View>
-                  <Text style={{ fontWeight: "bold" }}>{donation.location}</Text>
-                  <SmallText>{formatDate(new Date(donation.date))}</SmallText>
+                  <Text style={{ fontWeight: "bold", color: themeColors.text }}>{donation.location}</Text>
+                  <SmallText style={{ color: themeColors.text, opacity: 0.7 }}>{formatDate(new Date(donation.date))}</SmallText>
                 </View>
                 <View style={{ alignItems: "flex-end" }}>
-                  <Badge style={{ backgroundColor: COLORS.light, borderColor: COLORS.border, paddingVertical: 4 }}>
-                    <SmallText style={{ color: COLORS.dark, fontSize: 12 }}>{donation.amount}</SmallText>
+                  <Badge style={{ backgroundColor: profileTheme === 'dark' ? '#333' : COLORS.light, borderColor: themeColors.border, paddingVertical: 4 }}>
+                    <SmallText style={{ color: themeColors.text, fontSize: 12 }}>{donation.amount}</SmallText>
                   </Badge>
                 </View>
               </Row>
@@ -163,8 +188,8 @@ export default function ProfileScreen() {
         </Card>
 
         {/* Benefits Card */}
-        <Card>
-          <Subtitle>Seus Benefícios Atuais</Subtitle>
+        <Card style={{ backgroundColor: themeColors.card, borderColor: themeColors.border }}>
+          <Subtitle style={{ color: themeColors.text }}>Seus Benefícios Atuais</Subtitle>
           {currentLevel.benefits.map((benefit, index) => (
             <Row key={index} style={{ marginTop: 8 }}>
               <Ionicons
@@ -172,14 +197,14 @@ export default function ProfileScreen() {
                 size={20}
                 color={COLORS.success}
               />
-              <Text style={{ marginLeft: 8, flex: 1 }}>{benefit}</Text>
+              <Text style={{ marginLeft: 8, flex: 1, color: themeColors.text }}>{benefit}</Text>
             </Row>
           ))}
         </Card>
 
         {/* Settings Buttons */}
         <View style={{ paddingHorizontal: 16 }}>
-          <GameButton variant="secondary">
+          <GameButton variant="secondary" onPress={() => navigation.navigate("EditProfile")}>
             <ButtonText>Editar Perfil</ButtonText>
           </GameButton>
           

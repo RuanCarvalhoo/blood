@@ -81,9 +81,25 @@ interface Props {
 
 export default function DigitalCard({ user }: Props) {
   const currentLevel = calculateLevel(user.points);
+  const theme = user.profileCustomization?.cardTheme || "default";
+
+  const getThemeColors = () => {
+    switch (theme) {
+      case "gold":
+        return { bg: "#DAA520", text: "#FFF", accent: "#FFD700" };
+      case "platinum":
+        return { bg: "#E5E4E2", text: "#333", accent: "#C0C0C0" };
+      case "black":
+        return { bg: "#1A1A1A", text: "#FFF", accent: "#333" };
+      default:
+        return { bg: COLORS.primary, text: "#FFF", accent: "rgba(255,255,255,0.2)" };
+    }
+  };
+
+  const colors = getThemeColors();
 
   return (
-    <CardContainer>
+    <CardContainer style={{ backgroundColor: colors.bg }}>
       {/* Decorative background circles */}
       <View
         style={{
@@ -93,7 +109,8 @@ export default function DigitalCard({ user }: Props) {
           width: 150,
           height: 150,
           borderRadius: 75,
-          backgroundColor: "rgba(255,255,255,0.1)",
+          backgroundColor: colors.accent,
+          opacity: 0.2,
         }}
       />
       <View
@@ -104,28 +121,29 @@ export default function DigitalCard({ user }: Props) {
           width: 100,
           height: 100,
           borderRadius: 50,
-          backgroundColor: "rgba(255,255,255,0.1)",
+          backgroundColor: colors.accent,
+          opacity: 0.2,
         }}
       />
 
       <CardHeader>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Ionicons name="water" size={24} color={COLORS.white} />
-          <LogoText style={{ marginLeft: 8 }}>SangueBom</LogoText>
+          <Ionicons name="water" size={24} color={colors.text} />
+          <LogoText style={{ marginLeft: 8, color: colors.text }}>SangueBom</LogoText>
         </View>
-        <Ionicons name="wifi" size={24} color={COLORS.white} style={{ opacity: 0.8 }} />
+        <Ionicons name="wifi" size={24} color={colors.text} style={{ opacity: 0.8 }} />
       </CardHeader>
 
       <UserInfo>
-        <UserName>{user.name}</UserName>
-        <UserDetail>Tipo Sanguíneo: {user.bloodType}</UserDetail>
-        <UserDetail>Doador desde {new Date().getFullYear()}</UserDetail>
+        <UserName style={{ color: colors.text }}>{user.name}</UserName>
+        <UserDetail style={{ color: colors.text, opacity: 0.9 }}>Tipo Sanguíneo: {user.bloodType}</UserDetail>
+        <UserDetail style={{ color: colors.text, opacity: 0.9 }}>Doador desde {new Date().getFullYear()}</UserDetail>
       </UserInfo>
 
       <CardFooter>
-        <LevelBadge>
-          <LevelText>Nível {currentLevel.level}</LevelText>
-          <LevelText style={{ fontSize: 12, opacity: 0.9 }}>{currentLevel.name}</LevelText>
+        <LevelBadge style={{ backgroundColor: colors.accent }}>
+          <LevelText style={{ color: theme === "platinum" ? "#333" : "#FFF" }}>Nível {currentLevel.level}</LevelText>
+          <LevelText style={{ fontSize: 12, opacity: 0.9, color: theme === "platinum" ? "#333" : "#FFF" }}>{currentLevel.name}</LevelText>
         </LevelBadge>
         
         <QRCodePlaceholder>

@@ -17,6 +17,13 @@ export interface User {
   notificationsEnabled?: boolean;
   expoPushToken?: string;
   weight?: number; // Em kg
+  profileCustomization?: ProfileCustomization;
+}
+
+export interface ProfileCustomization {
+  cardTheme: "default" | "gold" | "platinum" | "black";
+  avatarFrame: "none" | "bronze" | "silver" | "gold" | "diamond";
+  profileTheme: "light" | "dark" | "red";
 }
 
 export type BloodType = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
@@ -98,6 +105,7 @@ export type RootStackParamList = {
   Notifications: undefined;
   Raids: undefined;
   DonationDetail: { donationId: string };
+  EditProfile: undefined;
 };
 
 export type TabParamList = {
