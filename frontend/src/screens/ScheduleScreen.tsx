@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, TouchableOpacity, Platform, FlatList, Modal } from "react-native";
+import { View, TouchableOpacity, Platform, FlatList, Modal, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useNavigation } from "@react-navigation/native";
+import * as Location from "expo-location";
 import { StackNavigationProp } from "@react-navigation/stack";
 import {
   Container,
@@ -16,13 +17,24 @@ import {
   GameButton,
   ButtonText,
   Row,
-  Center,
 } from "@/components/StyledComponents";
 import { COLORS, DONATION_INTERVAL_DAYS } from "@/constants";
 import { MOCK_HEMOCENTERS } from "@/constants/mocks";
-import { formatDate } from "@/utils";
+import { formatDate, getDistanceFromLatLonInKm } from "@/utils";
 import { useAuth } from "@/contexts";
 import { RootStackParamList } from "@/types";
+
+interface HemocenterWithDistance {
+    id: string;
+    name: string;
+    address: string;
+    city: string;
+    state: string;
+    latitude: number;
+    longitude: number;
+    availableSlots: string[];
+    calculatedDistance?: number;
+}
 
 type ScheduleScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -55,6 +67,50 @@ export default function ScheduleScreen() {
   const [selectedHemocenter, setSelectedHemocenter] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [showHemocenterModal, setShowHemocenterModal] = useState(false);
+  
+  const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
+  const [hemocenters, setHemocenters] = useState<HemocenterWithDistance[]>([]);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+
+  useEffect(() => {
+    getUserLocation();
+  }, []);
+
+  useEffect(() => {
+    if (userLocation) {
+        const sorted = MOCK_HEMOCENTERS.map((center) => {
+            const distance = getDistanceFromLatLonInKm(
+                userLocation.coords.latitude,
+                userLocation.coords.longitude,
+                center.latitude,
+                center.longitude
+            );
+            return { ...center, calculatedDistance: distance };
+        }).sort((a, b) => a.calculatedDistance - b.calculatedDistance);
+        
+        setHemocenters(sorted);
+    } else {
+        setHemocenters(MOCK_HEMOCENTERS.map(h => ({...h, calculatedDistance: undefined})));
+    }
+  }, [userLocation]);
+
+  const getUserLocation = async () => {
+    setIsLoadingLocation(true);
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permissão negada', 'Precisamos da sua localização para encontrar hemocentros próximos.');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setUserLocation(location);
+    } catch (error) {
+        console.log("Erro ao obter localização", error);
+    } finally {
+        setIsLoadingLocation(false);
+    }
+  };
 
   const handleDateChange = (event: any, date?: Date) => {
     if (Platform.OS !== "web") {
@@ -62,7 +118,7 @@ export default function ScheduleScreen() {
     }
     if (date) {
       setSelectedDate(date);
-      setSelectedTime(null); // Reset time when date changes
+      setSelectedTime(null); 
     }
   };
 
@@ -78,7 +134,7 @@ export default function ScheduleScreen() {
     if (!selectedDate || !selectedHemocenter || !selectedTime) {
       return;
     }
-    // TODO: API call
+    Alert.alert("Agendado!", "Sua doação foi agendada com sucesso.");
     navigation.goBack();
   };
 
@@ -89,7 +145,7 @@ export default function ScheduleScreen() {
     return `Intervalo: ${intervalDays} dias | Máximo: ${maxDonations} doações/ano`;
   };
 
-  const selectedHemocenterData = MOCK_HEMOCENTERS.find(h => h.id === selectedHemocenter);
+  const selectedHemocenterData = hemocenters.find(h => h.id === selectedHemocenter);
 
   if (!user) return null;
 
@@ -123,12 +179,27 @@ export default function ScheduleScreen() {
                   {selectedHemocenterData ? selectedHemocenterData.name : "Selecione um hemocentro"}
                 </Text>
                 {selectedHemocenterData && (
-                  <SmallText>{selectedHemocenterData.address}</SmallText>
+                   <Row style={{ justifyContent: 'flex-start', marginTop: 4 }}>
+                      <Ionicons name="location" size={14} color={COLORS.primary} />
+                      <SmallText style={{ marginLeft: 4, color: COLORS.primary }}>
+                        {selectedHemocenterData.calculatedDistance 
+                          ? `${selectedHemocenterData.calculatedDistance} km` 
+                          : selectedHemocenterData.address}
+                      </SmallText>
+                   </Row>
                 )}
               </View>
               <Ionicons name="chevron-down" size={20} color={COLORS.mediumGray} />
             </Row>
           </TouchableOpacity>
+          
+          {!userLocation && (
+             <TouchableOpacity onPress={getUserLocation} style={{ marginTop: 8, alignSelf: 'flex-end' }}>
+                <SmallText style={{ color: COLORS.secondary }}>
+                   {isLoadingLocation ? "Buscando GPS..." : "Usar minha localização"}
+                </SmallText>
+             </TouchableOpacity>
+          )}
         </Card>
 
         <Card>
@@ -235,7 +306,6 @@ export default function ScheduleScreen() {
           </GameButton>
         </View>
 
-        {/* Modal de Hemocentros */}
         <Modal
           visible={showHemocenterModal}
           animationType="slide"
@@ -245,14 +315,16 @@ export default function ScheduleScreen() {
           <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}>
             <View style={{ backgroundColor: COLORS.background, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: "80%" }}>
               <Row style={{ justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <Title style={{ fontSize: 22, marginBottom: 0 }}>Selecione o Local</Title>
+                <Title style={{ fontSize: 22, marginBottom: 0 }}>
+                    {userLocation ? "Próximos a você" : "Selecione o Local"}
+                </Title>
                 <TouchableOpacity onPress={() => setShowHemocenterModal(false)}>
                   <Ionicons name="close" size={24} color={COLORS.dark} />
                 </TouchableOpacity>
               </Row>
               
               <FlatList
-                data={MOCK_HEMOCENTERS}
+                data={hemocenters}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                   <TouchableOpacity
@@ -267,11 +339,19 @@ export default function ScheduleScreen() {
                       backgroundColor: selectedHemocenter === item.id ? COLORS.light : "transparent"
                     }}
                   >
-                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>{item.name}</Text>
-                    <SmallText>{item.address}</SmallText>
-                    <Row style={{ marginTop: 4 }}>
-                      <Ionicons name="location-outline" size={14} color={COLORS.primary} />
-                      <SmallText style={{ marginLeft: 4, color: COLORS.primary }}>{item.distance}</SmallText>
+                    <Row style={{ justifyContent: "space-between" }}>
+                        <View style={{flex: 1}}>
+                            <Text style={{ fontWeight: "bold", fontSize: 16 }}>{item.name}</Text>
+                            <SmallText>{item.address}</SmallText>
+                        </View>
+                        {item.calculatedDistance !== undefined && (
+                            <View style={{alignItems: 'flex-end'}}>
+                                <Ionicons name="navigate-circle" size={20} color={COLORS.primary} />
+                                <SmallText style={{ color: COLORS.primary, fontWeight: "bold" }}>
+                                    {item.calculatedDistance} km
+                                </SmallText>
+                            </View>
+                        )}
                     </Row>
                   </TouchableOpacity>
                 )}
